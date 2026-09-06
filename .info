@@ -1,0 +1,41 @@
+should be able to:
+    - start new process from other bin
+    - redirect output process using PIPE
+    - keep ansi sequence (color, hyperlink, ...)
+    - remove duplicate
+    - internal communication client <-> server (ipc)
+    - contact ollama through socket TCP localhost (failsafe)
+
+parameters:
+    [global]
+    - help
+    - verbose mode
+
+    [special mode]
+    - mode to install ollama
+    - mode to setup a user daemon
+
+    [client mode]
+    - process to start
+    - forge rules from .cfg
+
+    [server mode]
+    - ip ollama
+    - port ollama
+    - model used
+    - system-prompt used
+
+usages:
+    [global]
+    context-forge -h
+
+    [special mode]
+    context-forge setup
+    context-forge remove
+    context-forge install-ollama
+
+    [client mode]
+    context-forge exec [-v|--verbose <level>] <command> [<args>]*
+
+    [server mode]
+    context-forge server (-r|--rules <cfg_path>)* [-ip <ollama_ip>] [-p|--port <ollama_port>] [-m|--model <model_name>] [-s|--system-prompt <system-prompt_path>] [-v|--verbose <level>]

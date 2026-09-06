@@ -1,0 +1,10 @@
+{
+    "errors": [
+        {
+            "code": "Tmp",
+            "message": "This is just a temporary error",
+            "info": "More information maybe?",
+            "restrictions": ["None", "Warning", "Error", "Fatal"]
+        }
+   ]
+}

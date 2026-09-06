@@ -1,0 +1,28 @@
+## Compilation
+*.o
+*.a
+!cmake/libs/*.a
+*.so
+a.out
+include/exception/generated_external_exception_header.hpp
+
+## Vim
+*.sw*
+\#*#
+*~
+:*
+q
+vg
+z
+
+## Doxygen
+/html
+/latex
+
+## CMake
+/build
+__pycache__
+
+## Other
+/runner
+#.info
