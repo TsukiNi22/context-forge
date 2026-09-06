@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 16/07/2026 by @author Tsukini
+##  @date 06/09/2026 by @author Tsukini
 
 File Name:
 ##  @file Forge.cpp
