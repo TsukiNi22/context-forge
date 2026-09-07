@@ -1,10 +1,9 @@
 {
     "errors": [
         {
-            "code": "Tmp",
-            "message": "This is just a temporary error",
-            "info": "More information maybe?",
-            "restrictions": ["None", "Warning", "Error", "Fatal"]
+            "code": "UnknownMode",
+            "message": "Unknown mode, can't dispatch the execution...",
+            "restrictions": ["Fatal", "Error"]
         }
    ]
 }

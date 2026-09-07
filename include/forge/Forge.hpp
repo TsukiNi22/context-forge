@@ -41,6 +41,14 @@ class Forge {
         std::string _bin;
         std::vector<std::string> _args;
 
+        // ---------- Pre-Function -------- //
+        /* dispatch */
+        void setup(void);
+        void remove(void);
+        void install(void);
+        void exec(void);
+        void server(void);
+
     public:
         // ---------- Pre-Function -------- //
         void init(int argc, const char *const argv[]);
