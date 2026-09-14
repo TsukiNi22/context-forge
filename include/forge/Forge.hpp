@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 14/09/2026 by @author Tsukini
+##  @date 15/09/2026 by @author Tsukini
 
 File Name:
 ##  @file Forge.hpp
@@ -27,6 +27,7 @@ File Description:
     /* type */
     #define _Arguments
     #include <utils/utils.hpp>  // utils::arguments::Settings
+    #include <sys/types.h>      // pid_t
     #include <vector>           // std::vector
     #include <string>           // std::string
 
@@ -42,6 +43,10 @@ class Forge {
         std::vector<std::string> _args;
 
         // ---------- Pre-Function -------- //
+        /* client (~failsafe) */
+        void fallback(void); // replace actual process by the one to wrap without anyhting
+        pid_t getServerPid(void); // call fallback or return the pid_t of the running server
+
         /* dispatch */
         void setup(void);
         void remove(void);

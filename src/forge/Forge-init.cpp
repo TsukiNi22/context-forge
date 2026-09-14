@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 14/09/2026 by @author Tsukini
+##  @date 15/09/2026 by @author Tsukini
 
 File Name:
 ##  @file Forge-init.cpp
@@ -187,7 +187,7 @@ void forge::Forge::init(int argc, const char *const argv[])
         else if (id == "system-prompt") this->_settings.add("system-prompt", value);
         else if (id == "command") {
             this->_bin = value;
-            this->_args = options;
+            this->_args.assign(options.begin() + 1, options.end());
         }
     }
     onDebugVerbose("Selected mode [" << (std::string)this->_settings.at("mode") << "]");

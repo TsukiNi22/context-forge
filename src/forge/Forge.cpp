@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 14/09/2026 by @author Tsukini
+##  @date 15/09/2026 by @author Tsukini
 
 File Name:
 ##  @file Forge.cpp
@@ -77,7 +77,7 @@ void forge::Forge::setup(void)
     // Setup the service emplacement
     onBasicVerbose("Creating systemd directory: " << systemd_dir);
     utils::encapsulation::Process proc_mkdir;
-    proc_mkdir.spawn("/bin/bash", {"-c", "mkdir -p " + systemd_dir});
+    proc_mkdir.spawn("bash", {"-c", "mkdir -p " + systemd_dir});
     proc_mkdir.wait();
 
     // Build the service content
@@ -116,24 +116,24 @@ void forge::Forge::setup(void)
     // Relead daemon
     onBasicVerbose("Reloading systemd user daemon config...");
     utils::encapsulation::Process daemon_reload;
-    daemon_reload.spawn("/bin/bash", {"-c", "systemctl --user daemon-reload"});
+    daemon_reload.spawn("bash", {"-c", "systemctl --user daemon-reload"});
     daemon_reload.wait();
 
     // Enable it to be able to start with the session
     onBasicVerbose("Enabling context-forge service...");
     utils::encapsulation::Process enable_proc;
-    enable_proc.spawn("/bin/bash", {"-c", "systemctl --user enable context-forge.service"});
+    enable_proc.spawn("bash", {"-c", "systemctl --user enable context-forge.service"});
     enable_proc.wait();
 
     // Start for the current session
     onBasicVerbose("Starting context-forge service...");
     utils::encapsulation::Process start_proc;
-    start_proc.spawn("/bin/bash", {"-c", "systemctl --user start context-forge.service"});
+    start_proc.spawn("bash", {"-c", "systemctl --user start context-forge.service"});
     const utils::encapsulation::Status& start_status = start_proc.wait();
 
     // Check the starting status
     if (!start_status.exited || start_status.code != 0) {
-        onBasicVerbose("Warning: Service may not have started properly (exit code: " << start_status.code << ")");
+        onBasicVerbose("Warning: Service may not have started properly (exit code: " << start_status.code << ", exit sig: " << start_status.sig << ")");
         onBasicVerbose("Use 'systemctl --user status context-forge.service' to check status");
     } else {
         onBasicVerbose("Setup completed successfully!");
@@ -154,25 +154,25 @@ void forge::Forge::remove(void)
     // Stop the service
     onBasicVerbose("Stopping context-forge service...");
     utils::encapsulation::Process stop_proc;
-    stop_proc.spawn("/bin/bash", {"-c", "systemctl --user stop context-forge.service"});
+    stop_proc.spawn("bash", {"-c", "systemctl --user stop context-forge.service"});
     stop_proc.wait();
 
     // Disable the service (won't restart with the session)
     onBasicVerbose("Disabling context-forge service...");
     utils::encapsulation::Process disable_proc;
-    disable_proc.spawn("/bin/bash", {"-c", "systemctl --user disable context-forge.service"});
+    disable_proc.spawn("bash", {"-c", "systemctl --user disable context-forge.service"});
     disable_proc.wait();
 
     // Remove the service file
     onBasicVerbose("Removing service file: " << service_file_path);
     utils::encapsulation::Process rm_proc;
-    rm_proc.spawn("/bin/bash", {"-c", "rm -f " + service_file_path});
+    rm_proc.spawn("bash", {"-c", "rm -f " + service_file_path});
     rm_proc.wait();
 
     // Relead daemon
     onBasicVerbose("Reloading systemd user daemon config...");
     utils::encapsulation::Process daemon_reload;
-    daemon_reload.spawn("/bin/bash", {"-c", "systemctl --user daemon-reload"});
+    daemon_reload.spawn("bash", {"-c", "systemctl --user daemon-reload"});
     daemon_reload.wait();
 
     onBasicVerbose("Removal completed successfully!");
@@ -187,8 +187,7 @@ void forge::Forge::install(void)
     // Spawn the sub-process that will install ollama
     onBasicVerbose("Starting ollama installation...");
     utils::encapsulation::Process proc;
-    std::vector<std::string> args = {"-c", "curl -fsSL https://ollama.com/install.sh | sh"};
-    proc.spawn("/bin/bash", args);
+    proc.spawn("bash", {"-c", "curl -fsSL https://ollama.com/install.sh | sh"});
 
     // Wait until the end of the ollama installation process
     onBasicVerbose("Waiting for ollama installation to complete...");
@@ -198,6 +197,6 @@ void forge::Forge::install(void)
     if (status.exited && status.code == 0) {
         onBasicVerbose("Ollama installed successfully!");
     } else {
-        throw utils::exception::ErrorException(utils::exception::InternalCode::Process, std::to_string(status.code));
+        throw utils::exception::ErrorException(utils::exception::InternalCode::Process, "code: " + std::to_string(status.code) + ", sig: " + std::to_string(status.sig));
     }
 }

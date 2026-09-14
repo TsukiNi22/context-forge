@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 14/09/2026 by @author Tsukini
+##  @date 15/09/2026 by @author Tsukini
 
 File Name:
 ##  @file Forge-Server.cpp
@@ -24,6 +24,9 @@ File Description:
 #include <utils/utils.hpp>
 #include "forge/Forge.hpp"
 
+#include <thread>
+#include <chrono>
 void forge::Forge::server(void)
 {
+    std::this_thread::sleep_for(std::chrono::milliseconds(2500));
 }
