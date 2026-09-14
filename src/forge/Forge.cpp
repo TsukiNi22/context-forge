@@ -55,7 +55,7 @@ _cold _nodiscard static std::string find_binary_path(void)
 {
     for (const std::string_view& candidate: BINARY_CANDIDATES)
         if (std::filesystem::exists(candidate)) return std::string(candidate);
-    throw utils::exception::ErrorException(utils::exception::InternalCode::Process, "Can't find the context-forge binary in any known install location");
+    throw utils::exception::ErrorException(utils::exception::ExternalCode::MissingBinary, "Can't find the context-forge binary in any known install location");
 }
 
 void forge::Forge::setup(void)
@@ -130,12 +130,12 @@ void forge::Forge::setup(void)
 
     // Check the starting status
     if (!start_status.exited || start_status.code != 0) {
-        onAdvancedVerbose("Warning: Service may not have started properly (exit code: " << start_status.code << ")");
+        onBasicVerbose("Warning: Service may not have started properly (exit code: " << start_status.code << ")");
         onBasicVerbose("Use 'systemctl --user status context-forge.service' to check status");
+    } else {
+        onBasicVerbose("Setup completed successfully!");
+        onBasicVerbose("Daemon will start on login and auto-restart on failure");
     }
-
-    onBasicVerbose("Setup completed successfully!");
-    onBasicVerbose("Daemon will start on login and auto-restart on failure");
 }
 
 void forge::Forge::remove(void)
