@@ -41,6 +41,11 @@ void forge::Forge::init(int argc, const char *const argv[])
         false,
         {
             {"setup", true},
+            {"rules", false},
+            {"ip", false},
+            {"port", false},
+            {"model", false},
+            {"system-prompt", false},
             {"verbose", false},
         },
         "Setup daemon and other things"
