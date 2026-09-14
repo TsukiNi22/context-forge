@@ -174,6 +174,7 @@ void forge::Forge::init(int argc, const char *const argv[])
         const std::string& value = (options.empty() ? "" : options.front());
         if (type) this->_settings.add("mode", value); // detect mode from first options
         else if (id == "verbose") {
+            this->_settings.add("verbose", value);
             if      (value == "none")     set_verbose(None)
             else if (value == "basic")    set_verbose(Basic)
             else if (value == "advanced") set_verbose(Advanced)

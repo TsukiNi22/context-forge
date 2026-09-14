@@ -24,8 +24,13 @@ File Description:
 #define _Encapsulation
 #include <utils/utils.hpp>
 #include "forge/Forge.hpp"
+#include <stdlib.h>
+#include <string_view>
 #include <fstream>
 #include <sstream>
+#include <vector>
+#include <string>
+#include <array>
 
 void forge::Forge::run(void)
 {
@@ -41,6 +46,18 @@ void forge::Forge::run(void)
     }
 }
 
+static constexpr std::array<std::string_view, 2> BINARY_CANDIDATES = {
+    "/usr/local/bin/context-forge", // installed via the repo (cmake)
+    "/usr/bin/context-forge",       // installed via package (cpack)
+};
+
+_cold _nodiscard static std::string find_binary_path(void)
+{
+    for (const std::string_view& candidate: BINARY_CANDIDATES)
+        if (std::filesystem::exists(candidate)) return std::string(candidate);
+    throw utils::exception::ErrorException(utils::exception::InternalCode::Process, "Can't find the context-forge binary in any known install location");
+}
+
 void forge::Forge::setup(void)
 {
     onBasicVerbose("Starting setup of systemd user daemon...");
@@ -52,20 +69,16 @@ void forge::Forge::setup(void)
     std::string systemd_dir = home + "/.config/systemd/user";
     std::string service_file_path = systemd_dir + "/context-forge.service";
 
+    // Locate the installed binary
+    onDebugVerbose("Locating the installed context-forge binary...");
+    std::string binary_path = find_binary_path();
+    onDebugVerbose("Binary found: " << binary_path);
+
     // Setup the service emplacement
     onBasicVerbose("Creating systemd directory: " << systemd_dir);
     utils::encapsulation::Process proc_mkdir;
     proc_mkdir.spawn("/bin/bash", {"-c", "mkdir -p " + systemd_dir});
     proc_mkdir.wait();
-
-    // Extract arguments values (need to be updated later using: contains)
-    std::string rules, ip, model, system_prompt;
-    std::uint16_t port_value = 0;
-    try {rules         = (std::string)this->_settings.at("rules");        } catch (...) {}
-    try {ip            = (std::string)this->_settings.at("ip");           } catch (...) {}
-    try {port_value    = (std::uint16_t)this->_settings.at("port");       } catch (...) {}
-    try {model         = (std::string)this->_settings.at("model");        } catch (...) {}
-    try {system_prompt = (std::string)this->_settings.at("system-prompt");} catch (...) {}
 
     // Build the service content
     std::ostringstream service_content;
@@ -76,13 +89,14 @@ void forge::Forge::setup(void)
     service_content << "Type=simple\n";
     service_content << "Restart=on-failure\n";
     service_content << "RestartSec=2\n";
-    service_content << "ExecStart=" << home << "/.local/bin/context-forge server";
+    service_content << "ExecStart=" << binary_path << " server";
 
-    if (!rules.empty()) service_content << " --rules " << rules;
-    if (!ip.empty()) service_content << " --ip " << ip;
-    if (port_value != 0) service_content << " --port " << port_value;
-    if (!model.empty()) service_content << " --model " << model;
-    if (!system_prompt.empty()) service_content << " --system-prompt " << system_prompt;
+    if (this->_settings.contains("verbose")) service_content << " --verbose " << (std::string)this->_settings.at("verbose");
+    if (this->_settings.contains("rules"))   service_content << " --rules " << (std::string)this->_settings.at("rules");
+    if (this->_settings.contains("ip"))      service_content << " --ip "    << (std::string)this->_settings.at("ip");
+    if (this->_settings.contains("port"))    service_content << " --port "  << (std::uint16_t)this->_settings.at("port");
+    if (this->_settings.contains("model"))   service_content << " --model " << (std::string)this->_settings.at("model");
+    if (this->_settings.contains("system-prompt")) service_content << " --system-prompt " << (std::string)this->_settings.at("system-prompt");
 
     service_content << "\n\n";
     service_content << "[Install]\n";

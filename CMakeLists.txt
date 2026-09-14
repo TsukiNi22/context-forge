@@ -15,7 +15,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON) # Moderne compilation -fPIE
 # =========================
 # Requirement
 # =========================
-find_package(utils CONFIG REQUIRED) # Check utils dependencies existance
+find_package(utils 2.13.6 CONFIG REQUIRED) # Check utils dependencies existance
 find_package(PkgConfig REQUIRED)
 find_package(Python3 REQUIRED) # Used for the special dependencie
 find_program(CCACHE_PROGRAM ccache) # Used for cache during compilation
@@ -107,17 +107,11 @@ target_link_options(${TARGET} PRIVATE
 # =========================
 include(GNUInstallDirs) # load variable used for installation
 
-# library
+# Binary
 install(TARGETS ${TARGET}
     EXPORT ${TARGET}Targets
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
-
-# header
-install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 # =========================
 # Utils
