@@ -44,8 +44,10 @@ set(SRC
     src/forge/main.cpp
     src/forge/Forge-init.cpp
 
-    # Main
+    # Exec
     src/forge/Forge.cpp
+    src/forge/Forge-Client.cpp
+    src/forge/Forge-Server.cpp
 )
 add_executable(${TARGET} ${SRC})
 

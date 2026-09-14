@@ -184,11 +184,3 @@ void forge::Forge::install(void)
         throw utils::exception::ErrorException(utils::exception::InternalCode::Process, std::to_string(status.code));
     }
 }
-
-void forge::Forge::exec(void)
-{
-}
-
-void forge::Forge::server(void)
-{
-}
