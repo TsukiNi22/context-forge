@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 06/09/2026 by @author Tsukini
+##  @date 14/09/2026 by @author Tsukini
 
 File Name:
 ##  @file Forge-init.cpp
@@ -156,7 +156,7 @@ void forge::Forge::init(int argc, const char *const argv[])
         "Model that will be used by ollama"
     );
     parser.setFlag("system-prompt",
-        {"s", "", "system-prompt", ""},
+        {"s", "", "system-prompt", "CONTEXT_FORGE_SYSTEM_PROMPT"},
         {
             {"path", true, utils::arguments::defaultFileParsingHook}
         },
