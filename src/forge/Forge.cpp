@@ -82,13 +82,15 @@ void forge::Forge::setup(void)
 
     // Build the service content
     std::ostringstream service_content;
-    service_content << "[Unit]\n";
-    service_content << "Description=context-forge daemon\n";
-    service_content << "After=network.target\n\n";
-    service_content << "[Service]\n";
-    service_content << "Type=simple\n";
-    service_content << "Restart=on-failure\n";
-    service_content << "RestartSec=2\n";
+    service_content << "[Unit]" << std::endl;
+    service_content << "Description=context-forge daemon" << std::endl;
+    service_content << "After=network.target" << std::endl;
+
+    service_content << std::endl;
+    service_content << "[Service]" << std::endl;
+    service_content << "Type=simple" << std::endl;
+    service_content << "Restart=always" << std::endl;
+    service_content << "RestartSec=2" << std::endl;
     service_content << "ExecStart=" << binary_path << " server";
 
     if (this->_settings.contains("verbose")) service_content << " --verbose " << (std::string)this->_settings.at("verbose");
@@ -97,10 +99,11 @@ void forge::Forge::setup(void)
     if (this->_settings.contains("port"))    service_content << " --port "  << (std::uint16_t)this->_settings.at("port");
     if (this->_settings.contains("model"))   service_content << " --model " << (std::string)this->_settings.at("model");
     if (this->_settings.contains("system-prompt")) service_content << " --system-prompt " << (std::string)this->_settings.at("system-prompt");
+    service_content << std::endl;
 
-    service_content << "\n\n";
-    service_content << "[Install]\n";
-    service_content << "WantedBy=default.target\n";
+    service_content << std::endl;
+    service_content << "[Install]" << std::endl;
+    service_content << "WantedBy=default.target" << std::endl;
 
     // Write the service file
     std::ofstream service_file(service_file_path);
