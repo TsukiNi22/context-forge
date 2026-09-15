@@ -18,6 +18,7 @@ File Description:
 ##  for me, life is all about functions...
 \**************************************************************/
 
+#define _Manip
 #define _Attribute
 #define _Exception
 #define _Verbose
@@ -36,6 +37,10 @@ File Description:
 void forge::Forge::fallback(void)
 {
     onDebugVerbose("fallback!!!");
+    onBasicVerbose(
+        utils::iomanip::color_rgb(175, 0, 175) << utils::iomanip::format("<strong>[FALLBACK]<>")
+        << utils::iomanip::format("<strong> context-forge: server is unavailable... (attempting to restart the service; logs: journalctl --user -u context-forge)<>")
+    );
     utils::encapsulation::Process proc;
     proc.replace(this->_bin, this->_args);
 }
