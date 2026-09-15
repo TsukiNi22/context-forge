@@ -108,10 +108,27 @@ void forge::Forge::exec(void)
     utils::encapsulation::SharedMemory shm;
     shm.init<false, utils::encapsulation::shm::LayoutPolicy::Interleaved>(SHM_NAME + std::to_string(pid));
 
-    // init connection
-    // exec bin in sub-process (spawn)
-    // redirect given stream
-    // send it to the server
-    // recv the formated version and display it
-    // close connection
+    // Setup the fd redirection
+    onDebugVerbose("setup redirection...");
+    utils::encapsulation::Pipe pipe; pipe.trigger();
+    int redirectedFd = this->_settings.contains("redirect") ? (int)this->_settings.at("redirect") : STDIN_FILENO;
+    int fd = pipe.getRead();
+
+    // Start the sub-process
+    onDebugVerbose("----------------- [Execution] -----------------");
+    utils::encapsulation::Process proc;
+    proc.dup(pipe.getWrite(), redirectedFd);
+    proc.spawn(this->_bin, this->_args);
+    this->_status = proc.wait();
+    onDebugVerbose("----------------- [Execution] -----------------");
+
+    // Send the information
+
+    // Get the information
+    std::string formated;
+
+    // Display the formated version
+    onDebugVerbose("----------------- [Formated] -----------------");
+    ::write(redirectedFd, formated.data(), formated.size());
+    onDebugVerbose("----------------- [Formated] -----------------");
 }

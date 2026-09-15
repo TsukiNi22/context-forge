@@ -22,6 +22,8 @@ File Description:
 #define _Arguments
 #include <utils/utils.hpp>
 #include "forge/Forge.hpp"
+#include <fcntl.h>
+#include <charconv>
 #include <optional>
 #include <string>
 
@@ -29,6 +31,16 @@ _nodiscard static std::optional<std::string> VerboseParsingHook(const std::strin
 {
     if (option == "none" || option == "basic" || option == "advanced" || option == "debug") return std::nullopt;
     return "Invalid verbose level, should be (none|basic|advanced|debug), but got: " + option;
+}
+
+_nodiscard static std::optional<std::string> FdParsingHook(const std::string& option)
+{
+    int fd = 0;
+    auto [ptr, ec] = std::from_chars(option.data(), option.data() + option.size(), fd);
+    if (ec != std::errc() || ptr != option.data() + option.size()) return "Invalid fd, expected an integer, but got: " + option;
+    if (fd < 0) return "Invalid fd, must be non-negative, but got: " + option;
+    if (::fcntl(fd, F_GETFD) == -1) return "Invalid fd, not an open file descriptor: " + option;
+    return std::nullopt;
 }
 
 void forge::Forge::init(int argc, const char *const argv[])
@@ -74,6 +86,7 @@ void forge::Forge::init(int argc, const char *const argv[])
         {
             {"exec", true},
             {"verbose", false},
+            {"redirect", false},
             {"command", true},
         },
         "Client usage, start a warpper around the given commands, communicate with the server to establish connection with other service"
@@ -122,6 +135,13 @@ void forge::Forge::init(int argc, const char *const argv[])
             {"level", true, VerboseParsingHook}
         },
         "Set the verbose level none|basic|advanced|debug (default: basic)"
+    );
+    parser.setFlag("redirect",
+        {"d", "fd", "redirect", ""},
+        {
+            {"fd", true, FdParsingHook}
+        },
+        "The file descriptor to redirect (default: stderr)"
     );
     parser.setFlag("command",
         {"c", "cmd", "command", ""},
@@ -180,6 +200,7 @@ void forge::Forge::init(int argc, const char *const argv[])
             else if (value == "advanced") set_verbose(Advanced)
             else if (value == "debug")    set_verbose(Debug)
         }
+        else if (id == "redirect") this->_settings.cast<utils::arguments::CastType::Int32>("redirect", value);
         else if (id == "rules") this->_settings.add("rules", value);
         else if (id == "ip") this->_settings.add("ip", value);
         else if (id == "port") this->_settings.cast<utils::arguments::CastType::UInt16>("port", value);

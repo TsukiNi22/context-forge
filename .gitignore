@@ -27,4 +27,7 @@ __pycache__
 ## Other
 /runner
 #.info
+*.sh
+perf.data
+perf.data.old
 CONTEXT.md

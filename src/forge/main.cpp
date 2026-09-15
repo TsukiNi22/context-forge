@@ -1,6 +1,6 @@
 /**************************************************************\
 Edition:
-##  @date 06/09/2026 by @author Tsukini
+##  @date 15/09/2026 by @author Tsukini
 
 File Name:
 ##  @file main.cpp
@@ -31,5 +31,6 @@ _cold _nodiscard int main(int argc, const char* argv[])
         std::cerr << e.formated() << std::endl;
         return KO;
     }
-    return OK;
+
+    return core.exit();
 }

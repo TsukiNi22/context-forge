@@ -26,7 +26,8 @@ File Description:
 
     /* type */
     #define _Arguments
-    #include <utils/utils.hpp>  // utils::arguments::Settings
+    #define _Encapsulation
+    #include <utils/utils.hpp>  // utils::arguments::Settings, utils::encapsulation::Status
     #include <sys/types.h>      // pid_t
     #include <cstddef>          // std::byte
     #include <vector>           // std::vector
@@ -48,8 +49,11 @@ class Forge {
     private:
         /* arguments */
         utils::arguments::Settings _settings;
+
+        /* client execution */
         std::string _bin;
         std::vector<std::string> _args;
+        utils::encapsulation::Status _status;
 
         // ---------- Pre-Function -------- //
         /* client (~failsafe) */
@@ -67,8 +71,7 @@ class Forge {
         // ---------- Pre-Function -------- //
         void init(int argc, const char *const argv[]);
         void run(void);
-
-        // ------------ Function ---------- //
+        int exit(void) const;
 
         // ------------ Operator ---------- //
         Forge& operator=(const Forge& other) = delete;

@@ -203,3 +203,10 @@ void forge::Forge::install(void)
         throw utils::exception::ErrorException(utils::exception::InternalCode::Process, "code: " + std::to_string(status.code) + ", sig: " + std::to_string(status.sig));
     }
 }
+
+int forge::Forge::exit(void) const
+{
+    if (this->_status.exited) return this->_status.code; // exited
+    else if (!this->_status.unknown) return this->_status.sig; // signal
+    return KO; // unknow
+}
