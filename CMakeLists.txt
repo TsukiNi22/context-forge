@@ -11,11 +11,12 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_COMPILER clang++)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}) # TARGET destination
 set(CMAKE_POSITION_INDEPENDENT_CODE ON) # Moderne compilation -fPIE
+add_compile_definitions(BACKWARD_COMPATIBILITY_WARNING) # To check internal usage for potential depreacted function
 
 # =========================
 # Requirement
 # =========================
-find_package(utils 2.13.8 CONFIG REQUIRED) # Check utils dependencies existance
+find_package(utils 2.13.12 CONFIG REQUIRED) # Check utils dependencies existance
 find_package(PkgConfig REQUIRED)
 find_package(Python3 REQUIRED) # Used for the special dependencie
 find_program(CCACHE_PROGRAM ccache) # Used for cache during compilation

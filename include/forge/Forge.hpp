@@ -28,8 +28,17 @@ File Description:
     #define _Arguments
     #include <utils/utils.hpp>  // utils::arguments::Settings
     #include <sys/types.h>      // pid_t
+    #include <cstddef>          // std::byte
     #include <vector>           // std::vector
     #include <string>           // std::string
+
+    //----------------------------------------------------------------//
+    /* DEFINE */
+
+    /* const */
+    #define CHANNEL_SIZE (sizeof(std::byte) * 4096) // aprox of command outpiut mean size
+    #define CHANNEL_NUMBER 10 // around 10~ process at once should not cause problems
+    #define SHM_NAME "context-forge:"
 
 namespace forge { // namespace start
 //----------------------------------------------------------------//

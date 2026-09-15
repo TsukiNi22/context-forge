@@ -36,10 +36,9 @@ File Description:
     
 void forge::Forge::fallback(void)
 {
-    onDebugVerbose("fallback!!!");
     onBasicVerbose(
-        utils::iomanip::color_rgb(175, 0, 175) << utils::iomanip::format("<strong>[FALLBACK]<>")
-        << utils::iomanip::format("<strong> context-forge: server is unavailable... (attempting to restart the service; logs: journalctl --user -u context-forge)<>")
+        utils::iomanip::color_rgb(175, 0, 175) << utils::smanip::format("<strong>[FALLBACK]<>")
+        << utils::smanip::format("<strong> context-forge: server is unavailable... (attempting to restart the service; logs: journalctl --user -u context-forge)<>")
     );
     utils::encapsulation::Process proc;
     proc.replace(this->_bin, this->_args);
@@ -65,6 +64,7 @@ _nodiscard pid_t forge::Forge::getServerPid(void)
 
     // Check process and service status
     if (!status.exited || status.code != 0) _unlikely {
+        onDebugVerboseC(std::cerr, "systemctl failed (exited=" << status.exited << ", code=" << status.code << ", sig=" << status.sig << "), fallback will be triggered");
         this->fallback();
         //throw utils::exception::ErrorException(utils::exception::InternalCode::Process, "code: " + std::to_string(status.code) + ", sig: " + std::to_string(status.sig));
     }
@@ -74,6 +74,7 @@ _nodiscard pid_t forge::Forge::getServerPid(void)
     std::array<char, 4096> buffer{};
     ssize_t n = ::read(fd, buffer.data(), buffer.size());
     if (n <= 0) _unlikely {
+        onDebugVerboseC(std::cerr, "failed to read pid from buffer (n=" << n << "), fallback will be triggered");
         this->fallback();
         //throw utils::exception::ErrorException(utils::exception::InternalCode::Read, ::strerror(errno));
     }
@@ -84,6 +85,7 @@ _nodiscard pid_t forge::Forge::getServerPid(void)
     onDebugVerbose("convert the buffer into a pid_t: '" << output << "'");
     pid_t pid = std::stoi(output);
     if (pid == 0) _unlikely {
+        onDebugVerboseC(std::cerr, "server not running (pid=0), fallback will be trigger");
         this->fallback();
         //throw utils::exception::ErrorException(utils::exception::InternalCode::Process, "No running process associated to context-forge.service, got pid: 0");
     }
@@ -93,11 +95,19 @@ _nodiscard pid_t forge::Forge::getServerPid(void)
 
 void forge::Forge::exec(void)
 {
+    onDebugVerbose("get server pid...");
     pid_t pid = this->getServerPid();
+    if (pid == 0) _unlikely { // Should be impossible to return 0
+        onDebugVerboseC(std::cerr, "server not running (pid=0), using fallback (Some dark shit is happening here!)");
+        this->fallback();
+        //throw utils::exception::ErrorException(utils::exception::InternalCode::Process, "No running process associated to context-forge.service, got pid: 0");
+    }
 
-    // check if a server is running
-    // in this case get it's pid and open the shm
-    // otherwhise just replace this proc by the process (replace)
+    // Open the shm
+    onDebugVerbose("opening shared memory with server pid: " << pid);
+    utils::encapsulation::SharedMemory shm;
+    shm.init<false, utils::encapsulation::shm::LayoutPolicy::Interleaved>(SHM_NAME + std::to_string(pid));
+
     // init connection
     // exec bin in sub-process (spawn)
     // redirect given stream

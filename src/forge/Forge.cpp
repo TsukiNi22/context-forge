@@ -35,6 +35,9 @@ File Description:
 void forge::Forge::run(void)
 {
     // Dispatch to selected mode
+    if (!this->_settings.contains("mode"))
+        throw utils::exception::ErrorException(utils::exception::InternalCode::Process, "No mode specified, use (setup|remove|install-ollama|exec|server)");
+
     const std::string& mode = this->_settings.at("mode");
     if (mode == "setup") this->setup();
     else if (mode == "remove") this->remove();
@@ -137,7 +140,7 @@ void forge::Forge::setup(void)
         onBasicVerbose("Use 'systemctl --user status context-forge.service' to check status");
     } else {
         onBasicVerbose("Setup completed successfully!");
-        onBasicVerbose("Daemon will start on login and auto-restart on failure");
+        onBasicVerbose("Daemon will start on login and auto-restart on failure and exit");
     }
 }
 
