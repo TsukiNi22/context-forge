@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 17/09/2026 by @author Tsukini
+##  @date 18/09/2026 by @author Tsukini
 
 File Name:
 ##  @file Forge-init.cpp
@@ -94,6 +94,8 @@ void forge::Forge::init(int argc, const char *const argv[])
         false,
         {
             {"status", true},
+            {"ip", false},
+            {"port", false},
         },
         "Display global status"
     );
@@ -220,7 +222,7 @@ void forge::Forge::init(int argc, const char *const argv[])
     parser.setFlag("port",
         {"p", "port", "port", "CONTEXT_FORGE_HOST_PORT"},
         {
-            {"port", true, utils::arguments::defaultTrueParsingHook}
+            {"port", true, utils::arguments::defaultSizetParsingHook}
         },
         "Port used to connect to ollama"
     );
@@ -254,7 +256,7 @@ void forge::Forge::init(int argc, const char *const argv[])
         else if (id == "redirect") this->_settings.cast<utils::arguments::CastType::Int32>("redirect", value);
         else if (id == "rules") this->_settings.add("rules", value);
         else if (id == "ip") this->_settings.add("ip", value);
-        else if (id == "port") this->_settings.cast<utils::arguments::CastType::UInt16>("port", value);
+        else if (id == "port") this->_settings.add("port", value);
         else if (id == "model") this->_settings.add("model", value);
         else if (id == "system-prompt") this->_settings.add("system-prompt", value);
         else if (id == "command") {

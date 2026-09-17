@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 17/09/2026 by @author Tsukini
+##  @date 18/09/2026 by @author Tsukini
 
 File Name:
 ##  @file Forge.cpp
@@ -231,7 +231,9 @@ void forge::Forge::status(void)
     std::cout << utils::iomanip::color_rgb(149, 165, 166) << "installed" << utils::smanip::format("<> / ");
 
     // check if the ollama server is running
-    const std::string ollama_status = exec("curl -s --max-time 1 http://127.0.0.1:11434/api/tags >/dev/null && echo running || echo stopped");
+    std::string ip = (this->_settings.contains("ip") ? (std::string)this->_settings.at("ip") : "localhost");
+    std::string port = (this->_settings.contains("port") ? (std::string)this->_settings.at("port") : "11434");
+    const std::string ollama_status = exec("curl -s --max-time 1 http://" + ip + ":" + port + "/api/tags >/dev/null && echo running || echo stopped");
     if (ollama_status == "running")
         std::cout << utils::iomanip::color_rgb(46, 204, 113) << "running";
     else

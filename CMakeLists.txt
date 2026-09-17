@@ -49,6 +49,7 @@ set(SRC
     src/forge/Forge.cpp
     src/forge/Forge-Client.cpp
     src/forge/Forge-Server.cpp
+    src/forge/Forge-Formating.cpp
 )
 add_executable(${TARGET} ${SRC})
 

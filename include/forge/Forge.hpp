@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 17/09/2026 by @author Tsukini
+##  @date 18/09/2026 by @author Tsukini
 
 File Name:
 ##  @file Forge.hpp
@@ -59,6 +59,11 @@ class Forge {
         /* client (~failsafe) */
         void fallback(void); // replace actual process by the one to wrap without anyhting
         pid_t getServerPid(void); // call fallback or return the pid_t of the running server
+
+        /* server */
+        void load(void); // load cfg/sysprompt (only loaded one time at init)
+        void formatCFG(std::string& input) const;
+        void formatLLM(std::string& input) const;
 
         /* dispatch */
         void setup(void);

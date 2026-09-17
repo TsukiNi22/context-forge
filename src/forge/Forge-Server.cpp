@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 17/09/2026 by @author Tsukini
+##  @date 18/09/2026 by @author Tsukini
 
 File Name:
 ##  @file Forge-Server.cpp
@@ -41,6 +41,9 @@ _hidden _nodiscard static inline std::vector<std::byte> stringToBytes(const std:
 
 void forge::Forge::server(void)
 {
+    onAdvancedVerbose("load ressources (rules, system-prompt, ect)...");
+    this->load();
+
     onAdvancedVerbose("create the shm...");
     utils::encapsulation::SharedMemory shm;
     std::string shm_name = SHM_NAME + std::to_string(shm.ownership());
@@ -99,7 +102,12 @@ void forge::Forge::server(void)
             std::cout << "--------- [transmitions] ---------" << std::endl;
         );
 
+        // Pass throught internal formating
         onAdvancedVerbose("formating...");
+        for (auto& [_, input]: inputs) {
+            this->formatCFG(input); // rules files (*.cfg)
+            this->formatLLM(input); // llm (with ollama)
+        }
 
         // Send the information
         onAdvancedVerbose("sending...");
