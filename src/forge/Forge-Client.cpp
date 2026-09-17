@@ -50,7 +50,7 @@ void forge::Forge::fallback(void)
 {
     onBasicVerbose(
         utils::iomanip::color_rgb(175, 0, 175) << utils::smanip::format("<strong>[FALLBACK]<>")
-        << utils::smanip::format("<strong> context-forge: server is unavailable... (attempting to restart the service; logs: journalctl --user -u context-forge)<>")
+        << utils::smanip::format("<strong> context-forge: server is unavailable... (logs: journalctl --user -u context-forge)<>")
     );
     utils::encapsulation::Process proc;
     proc.replace(this->_bin, this->_args);

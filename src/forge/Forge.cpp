@@ -18,6 +18,7 @@ File Description:
 ##  for me, life is all about functions...
 \**************************************************************/
 
+#define _Manip
 #define _Attribute
 #define _Exception
 #define _Verbose
@@ -40,6 +41,10 @@ void forge::Forge::run(void)
 
     const std::string& mode = this->_settings.at("mode");
     if (mode == "setup") this->setup();
+    else if (mode == "stop") this->stop();
+    else if (mode == "start") this->start();
+    else if (mode == "restart") this->restart();
+    else if (mode == "status") this->status();
     else if (mode == "remove") this->remove();
     else if (mode == "install-ollama") this->install();
     else if (mode == "exec") this->exec();
@@ -131,7 +136,7 @@ void forge::Forge::setup(void)
     // Start for the current session
     onBasicVerbose("Starting context-forge service...");
     utils::encapsulation::Process start_proc;
-    start_proc.spawn("bash", {"-c", "systemctl --user start context-forge.service"});
+    start_proc.spawn("bash", {"-c", "systemctl --user restart context-forge.service"});
     const utils::encapsulation::Status& start_status = start_proc.wait();
 
     // Check the starting status
@@ -142,6 +147,96 @@ void forge::Forge::setup(void)
         onBasicVerbose("Setup completed successfully!");
         onBasicVerbose("Daemon will start on login and auto-restart on failure and exit");
     }
+}
+
+void forge::Forge::stop(void)
+{
+    onBasicVerbose("Stopping the server...");
+    utils::encapsulation::Process stop_proc;
+    stop_proc.replace("bash", {"-c", "systemctl --user stop context-forge.service"});
+}
+
+void forge::Forge::start(void)
+{
+    onBasicVerbose("Starting the server...");
+    utils::encapsulation::Process stop_proc;
+    stop_proc.replace("bash", {"-c", "systemctl --user start context-forge.service"});
+}
+
+void forge::Forge::restart(void)
+{
+    onBasicVerbose("Restarting the server...");
+    utils::encapsulation::Process stop_proc;
+    stop_proc.replace("bash", {"-c", "systemctl --user restart context-forge.service"});
+}
+
+void forge::Forge::status(void)
+{
+    auto exec = [](const std::string& command) -> std::string {
+        // exec the command
+        utils::encapsulation::Pipe pipe; pipe.trigger();
+        utils::encapsulation::Process proc;
+        proc.dup(pipe.getWrite(), STDOUT_FILENO);
+        proc.spawn("bash", {"-c", command});
+        proc.wait();
+        /*const utils::encapsulation::Status& status = proc.wait();
+        if (!status.exited || status.code != 0) _unlikely {
+            throw utils::exception::ErrorException(utils::exception::InternalCode::Process, "code: " + std::to_string(status.code) + ", sig: " + std::to_string(status.sig));
+        }*/
+
+        // read result
+        std::array<char, 256> buffer{};
+        ssize_t n = ::read(pipe.getRead(), buffer.data(), buffer.size());
+        if (n <= 0) _unlikely {
+            throw utils::exception::ErrorException(utils::exception::InternalCode::Read, ::strerror(errno));
+        }
+
+        // remove any line return
+        std::string output(buffer.data(), n);
+        while (!output.empty() && (output.back() == '\n' || output.back() == '\r'))
+            output.pop_back();
+
+        return output;
+    };
+
+    // check the server status
+    const std::string service_unit = exec("systemctl --user list-unit-files context-forge.service 2>/dev/null");
+    const bool service_installed = (service_unit.find("context-forge.service") != std::string::npos);
+    const std::string server_status = exec("systemctl --user is-active context-forge.service 2>/dev/null");
+    std::cout << utils::smanip::format("<strong>server:<> ");
+    if (!service_installed)
+        std::cout << utils::iomanip::color_rgb(149, 165, 166) << "not installed" << utils::iomanip::reset() << " (run: context-forge setup)";
+    else if (server_status == "active")
+        std::cout << utils::iomanip::color_rgb(46, 204, 113)  << "running";
+    else if (server_status == "inactive")
+        std::cout << utils::iomanip::color_rgb(230, 126, 34)  << "stopped" << utils::iomanip::reset() << " (run: context-forge start)";
+    else if (server_status == "failed")
+        std::cout << utils::iomanip::color_rgb(231, 76, 60)   << "crashed" << utils::iomanip::reset() << " (good luck o_o)";
+    else if (server_status == "activating")
+        std::cout << utils::iomanip::color_rgb(241, 196, 15)  << "starting";
+    else if (server_status == "deactivating")
+        std::cout << utils::iomanip::color_rgb(241, 196, 15)  << "stopping";
+    else
+        std::cout << utils::iomanip::color_rgb(155, 89, 182)  << server_status << utils::iomanip::reset() << " (good luck o_O, your are on your own!)";
+    std::cout << utils::iomanip::reset() << std::endl;
+
+    // check if ollama is installed
+    std::cout << utils::smanip::format("<strong>ollama:<> ");
+    const std::string ollama_path = exec("command -v ollama 2>/dev/null");
+    if (ollama_path.empty()) {
+        std::cout << utils::iomanip::color_rgb(149, 165, 166) << "not installed";
+        std::cout << utils::iomanip::reset() << std::endl;
+        return;
+    }
+    std::cout << utils::iomanip::color_rgb(149, 165, 166) << "installed" << utils::smanip::format("<> / ");
+
+    // check if the ollama server is running
+    const std::string ollama_status = exec("curl -s --max-time 1 http://127.0.0.1:11434/api/tags >/dev/null && echo running || echo stopped");
+    if (ollama_status == "running")
+        std::cout << utils::iomanip::color_rgb(46, 204, 113) << "running";
+    else
+        std::cout << utils::iomanip::color_rgb(230, 126, 34) << "stopped" << utils::iomanip::reset() << " (run: ollama serve)";
+    std::cout << utils::iomanip::reset() << std::endl;
 }
 
 void forge::Forge::remove(void)

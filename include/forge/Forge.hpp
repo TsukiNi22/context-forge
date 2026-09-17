@@ -62,6 +62,10 @@ class Forge {
 
         /* dispatch */
         void setup(void);
+        void stop(void);
+        void start(void);
+        void restart(void);
+        void status(void);
         void remove(void);
         void install(void);
         void exec(void);

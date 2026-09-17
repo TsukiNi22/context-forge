@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 15/09/2026 by @author Tsukini
+##  @date 17/09/2026 by @author Tsukini
 
 File Name:
 ##  @file Forge-init.cpp
@@ -62,6 +62,41 @@ void forge::Forge::init(int argc, const char *const argv[])
         },
         "Setup daemon and other things"
     );
+    parser.setUsage("context-forge_stop",
+        "stop",
+        false,
+        {
+            {"stop", true},
+            {"verbose", false},
+        },
+        "Stop the server"
+    );
+    parser.setUsage("context-forge_start",
+        "start",
+        false,
+        {
+            {"start", true},
+            {"verbose", false},
+        },
+        "Start the server"
+    );
+    parser.setUsage("context-forge_restart",
+        "restart",
+        false,
+        {
+            {"restart", true},
+            {"verbose", false},
+        },
+        "Restart the server"
+    );
+    parser.setUsage("context-forge_status",
+        "status",
+        false,
+        {
+            {"status", true},
+        },
+        "Display global status"
+    );
     parser.setUsage("context-forge_remove",
         "remove",
         false,
@@ -110,6 +145,22 @@ void forge::Forge::init(int argc, const char *const argv[])
     parser.setOption("setup",
         "setup",
         "Switch to the setup mode"
+    );
+    parser.setOption("stop",
+        "stop",
+        "Stop the server"
+    );
+    parser.setOption("start",
+        "start",
+        "Start the server"
+    );
+    parser.setOption("restart",
+        "restart",
+        "Restart the server"
+    );
+    parser.setOption("status",
+        "status",
+        "Display global status"
     );
     parser.setOption("remove",
         "remove",
