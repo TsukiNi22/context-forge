@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 16/09/2026 by @author Tsukini
+##  @date 17/09/2026 by @author Tsukini
 
 File Name:
 ##  @file Forge-Client.cpp
@@ -106,7 +106,7 @@ _nodiscard pid_t forge::Forge::getServerPid(void)
 
 void forge::Forge::exec(void)
 {
-    onDebugVerbose("get server pid...");
+    onAdvancedVerbose("get server pid...");
     pid_t pid = this->getServerPid();
     if (pid == 0) _unlikely { // Should be impossible to return 0
         onDebugVerboseC(std::cerr, "server not running (pid=0), using fallback (Some dark shit is happening here!)");
@@ -115,19 +115,19 @@ void forge::Forge::exec(void)
     }
 
     // Open the shm
-    onDebugVerbose("opening shared memory with server pid: " << pid);
+    onAdvancedVerbose("opening shared memory using server pid...");
     utils::encapsulation::SharedMemory shm;
     std::string shm_name = SHM_NAME + std::to_string(pid);
     shm.init<false, utils::encapsulation::shm::LayoutPolicy::Interleaved>(shm_name);
     onDebugVerbose("shm opened as: " << shm_name);
 
     // Setup the fd redirection
-    onDebugVerbose("setup redirection...");
+    onAdvancedVerbose("setup redirection...");
     utils::encapsulation::Pipe pipe; pipe.trigger();
     int redirectedFd = this->_settings.contains("redirect") ? (int)this->_settings.at("redirect") : STDIN_FILENO;
 
     // Start the sub-process
-    onDebugVerbose("----------------- [Execution] -----------------");
+    onAdvancedVerbose("----------------- [Execution] -----------------");
     utils::encapsulation::Process proc;
     proc.dup(pipe.getWrite(), redirectedFd);
     proc.spawn(this->_bin, this->_args);
@@ -153,7 +153,7 @@ void forge::Forge::exec(void)
 
     // Wait until the end of the sub-process
     this->_status = proc.wait();
-    onDebugVerbose("----------------- [Execution] -----------------");
+    onAdvancedVerbose("----------------- [Execution] -----------------");
 
     // Send the information
     std::vector<std::byte> bytes = stringToBytes(output);
@@ -161,35 +161,42 @@ void forge::Forge::exec(void)
     if (channel_used == 0) channel_used = 1; // always send at least one string even empty
 
     // function to select chunk of the bytes
-    constexpr std::size_t headerSize = sizeof(std::int32_t);
+    constexpr std::size_t headerSize = sizeof(std::uint32_t);
     constexpr std::size_t payloadSize = CHANNEL_SIZE - headerSize;
     auto chunkAt = [&bytes, payloadSize](std::size_t index) -> std::vector<std::byte> {
         std::size_t offset = index * payloadSize;
         std::size_t len = std::min(payloadSize, bytes.size() - offset);
         std::vector<std::byte> chunk(headerSize + len);
-        std::int32_t chunkIndex = static_cast<std::int32_t>(index);
+        std::uint32_t chunkIndex = static_cast<std::uint32_t>(index);
         std::memcpy(chunk.data(), &chunkIndex, headerSize);
         std::memcpy(chunk.data() + headerSize, bytes.data() + offset, len);
         return chunk;
     };
 
     // Send all chunk
+    onAdvancedVerbose("sending...");
     utils::encapsulation::shm::Id id = shm.send(chunkAt(0), (channel_used == 1), true);
     for (std::size_t i = 1; i < channel_used; ++i)
         shm.send(chunkAt(i), id, (i == channel_used - 1), true);
 
     // Get the information
-    shm.join(id, true); // wait for the full awnser
-    std::optional<std::vector<std::vector<std::byte>>> payloads = shm.read(id);
+    shm.join(true); // wait for the full awnser
+    std::optional<std::unordered_map<utils::encapsulation::shm::Id, std::vector<std::vector<std::byte>>>> payloads = shm.read(utils::encapsulation::shm::ReadFilter::LastOnly);
     std::string formated;
 
-    // Format the return
+    // Get the server return
+    onAdvancedVerbose("reading...");
     if (payloads.has_value()) _likely {
+        // shouldn't await multiple awnser
+        if (payloads->size() != 1) _unlikely {
+            throw utils::exception::FatalException(utils::exception::InternalCode::Process, "shouldn't have read more than one communication from the server: " + std::to_string(payloads->size()));
+        }
+        std::vector<std::vector<std::byte>> sub_payloads = payloads->begin()->second;
         std::vector<std::pair<std::uint32_t, std::vector<std::byte>>> chunks;
-        chunks.reserve(payloads->size());
+        chunks.reserve(sub_payloads.size());
 
         // separate the index and content from the payload
-        for (const std::vector<std::byte>& chunk : *payloads) {
+        for (const std::vector<std::byte>& chunk: sub_payloads) {
             std::uint32_t chunkIndex = 0;
             std::memcpy(&chunkIndex, chunk.data(), headerSize);
             std::vector<std::byte> payload(chunk.begin() + headerSize, chunk.end());
@@ -208,7 +215,7 @@ void forge::Forge::exec(void)
     }
 
     // Display the formated version
-    onDebugVerbose("----------------- [Formated] -----------------");
+    onAdvancedVerbose("----------------- [Formated] -----------------");
     ::write(redirectedFd, formated.data(), formated.size());
-    onDebugVerbose("----------------- [Formated] -----------------");
+    onAdvancedVerbose("----------------- [Formated] -----------------");
 }

@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 15/09/2026 by @author Tsukini
+##  @date 17/09/2026 by @author Tsukini
 
 File Name:
 ##  @file Forge.cpp
@@ -73,9 +73,9 @@ void forge::Forge::setup(void)
     std::string service_file_path = systemd_dir + "/context-forge.service";
 
     // Locate the installed binary
-    onDebugVerbose("Locating the installed context-forge binary...");
+    onAdvancedVerbose("Locating the installed context-forge binary...");
     std::string binary_path = find_binary_path();
-    onDebugVerbose("Binary found: " << binary_path);
+    onAdvancedVerbose("Binary found: " << binary_path);
 
     // Setup the service emplacement
     onBasicVerbose("Creating systemd directory: " << systemd_dir);
@@ -114,7 +114,7 @@ void forge::Forge::setup(void)
         throw utils::exception::ErrorException(utils::exception::InternalCode::Process, "Failed to create service file: " + service_file_path);
     service_file << service_content.str();
     service_file.close();
-    onBasicVerbose("Service file created at: " << service_file_path);
+    onAdvancedVerbose("Service file created at: " << service_file_path);
 
     // Relead daemon
     onBasicVerbose("Reloading systemd user daemon config...");
