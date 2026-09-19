@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 19/09/2026 by @author Tsukini
+##  @date 20/09/2026 by @author Tsukini
 
 File Name:
 ##  @file Forge-init.cpp
@@ -210,18 +210,16 @@ void forge::Forge::init(int argc, const char *const argv[])
         true
     );
     parser.setFlag("plugins",
-        {"p", "so", "plugins", ""},
+        {"P", "so", "plugins", ""},
         {
-            //{"path", true, utils::arguments::defaultDirectoryParsingHook}
-            {"path", true, utils::arguments::defaultTrueParsingHook}
+            {"path", true, utils::arguments::defaultDirectoryParsingHook}
         },
         "Path of the directory for the rules's shared object (plugins) used to edit the context (<path>/*.so)"
     );
     parser.setFlag("rules",
         {"r", "rules", "rules", ""},
         {
-            //{"path", true, utils::arguments::defaultDirectoryParsingHook}
-            {"path", true, utils::arguments::defaultTrueParsingHook}
+            {"path", true, utils::arguments::defaultDirectoryParsingHook}
         },
         "Path of the directory for the rules used to edit the context (<path>/*.cfg)"
     );

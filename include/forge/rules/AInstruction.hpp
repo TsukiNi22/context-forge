@@ -8,18 +8,18 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 19/09/2026 by @author Tsukini
+##  @date 20/09/2026 by @author Tsukini
 
 File Name:
-##  @file ARule.hpp
+##  @file AInstruction.hpp
 
 File Description:
 ##  You know, I don t think there are good or bad descriptions,
 ##  for me, life is all about functions...
 \**************************************************************/
 
-#ifndef ARULE_H
-    #define ARULE_H
+#ifndef AINSTRUCTION_H
+    #define AINSTRUCTION_H
 
     //----------------------------------------------------------------//
     /* INCLUDE */
@@ -27,34 +27,35 @@ File Description:
     /* type */
     #define _Attribute
     #include <utils/utils.hpp>  // _cold, _nodiscard
-    #include "IRule.hpp"        // forge::cfg::IRule
+    #include "IInstruction.hpp" // forge::rules::IInstruction
     #include <string>           // std::string
 
-namespace forge::cfg { // namespace start
+namespace forge::rules { // namespace start
 //----------------------------------------------------------------//
 /* CLASS */
 
-class ARule: public forge::cfg::IRule {
+class AInstruction: public forge::rules::IInstruction {
     private:
+        // used only for debug purpose on server side
         std::string _name = "[none]";
 
     public:
         // ------------ Function ---------- //
-        _cold _nodiscard void std::string name(void) final const {return this->_name;};
+        _cold _nodiscard std::string name(void) const final {return this->_name;};
 
         // ------------ Operator ---------- //
-        ARule& operator=(const ARule& other) = delete;
-        ARule& operator=(ARule&& other) = delete;
+        AInstruction& operator=(const AInstruction& other) = delete;
+        AInstruction& operator=(AInstruction&& other) = delete;
 
         // ---------- Constructor --------- //
-        ARule() = default;
-        ARule(const std::string& name): _name{name} {};
-        ARule(const ARule& other) = delete;
-        ARule(ARule&& other) = delete;
+        AInstruction() = default;
+        AInstruction(const std::string& name): _name{name} {};
+        AInstruction(const AInstruction& other) = delete;
+        AInstruction(AInstruction&& other) = delete;
 
         // ----------- Destructor --------- //
-        ~ARule() = default;
+        ~AInstruction() = default;
 };
 
 } // namespace end
-#endif /* ARULE_H */
+#endif /* AINSTRUCTION_H */

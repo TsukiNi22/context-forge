@@ -38,6 +38,7 @@ File Description:
 
 void forge::Forge::run(void)
 {
+    // only for debug purpose, used to compare request owner on server side
     onDebugVerbose("pid: " << ::getpid());
 
     // Dispatch to selected mode

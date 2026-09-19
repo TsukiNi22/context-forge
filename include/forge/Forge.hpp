@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 19/09/2026 by @author Tsukini
+##  @date 20/09/2026 by @author Tsukini
 
 File Name:
 ##  @file Forge.hpp
@@ -27,12 +27,12 @@ File Description:
     /* type */
     #define _Arguments
     #define _Encapsulation
-    #include <utils/utils.hpp>  // utils::arguments::Settings, utils::encapsulation::Status
-    #include "cfg/IRule.hpp"    // forge::cfg::IRule
-    #include "cfg/Rules.hpp"    // forge::cfg::Rules   
+    #include <utils/utils.hpp>  // utils::arguments::Settings, utils::encapsulation::Status, utils::encapsulation::SharedObject
+    #include "rules/Rules.hpp"  // forge::rules::Rules   
     #include <sys/types.h>      // pid_t
     #include <unordered_map>    // std::unordered_map
-    #include <cstddef>          // std::byte
+    #include <variant>          // std::variant
+    #include <cstddef>          // std::size_t, std::byte
     #include <memory>           // std::unique_ptr
     #include <vector>           // std::vector
     #include <string>           // std::string
@@ -45,9 +45,32 @@ File Description:
     #define CHANNEL_NUMBER 10 // around 10~ process at once should not cause problems
     #define SHM_NAME "context-forge:"
 
+    /* default */
+    #define OLLAMA_DEFAULT_MODEL "qwen2.5-coder:1.5b"
+    #define OLLAMA_DEFAULT_IP "localhost"
+    #define OLLAMA_DEFAULT_PORT 11434
+
+    /* type */
+    #define TYPE_TRIGGER 0
+    #define TYPE_PRE_RULE 1
+    #define TYPE_RULE 2
+
 namespace forge { // namespace start
 //----------------------------------------------------------------//
 /* CLASS */
+
+using PluginFactory = std::variant<
+    forge::rules::ITrigger* (*)(), // TYPE_TRIGGER, index = 0
+    forge::rules::IPreRule* (*)(), // TYPE_PRE_RULE, index = 1
+    forge::rules::IRule* (*)()     // TYPE_RULE, index = 2
+>;
+
+template<std::size_t Index>
+using FactoryType = std::variant_alternative_t<Index, forge::PluginFactory>;
+
+using TriggerFactory = forge::FactoryType<TYPE_TRIGGER>;
+using PreRuleFactory = forge::FactoryType<TYPE_PRE_RULE>;
+using RuleFactory = forge::FactoryType<TYPE_RULE>;
 
 class Forge {
     private:
@@ -55,13 +78,13 @@ class Forge {
         utils::arguments::Settings _settings;
 
         /* server execution */
-        std::unordered_map<std::string, std::unique_ptr<forge::cfg::IRule>> _rule;
-        std::vector<forge::cfg::Rules> _rules;
+        std::unordered_map<std::string, std::pair<forge::PluginFactory, utils::encapsulation::SharedObject>> _plugins;
+        std::vector<forge::rules::Rules> _rules;
 
         /* client execution */
         std::string _bin;
         std::vector<std::string> _args;
-        utils::encapsulation::Status _status;
+        utils::encapsulation::Status _status; // process exit status after exec
 
         // ---------- Pre-Function -------- //
         /* client (~failsafe) */
@@ -69,7 +92,8 @@ class Forge {
         pid_t getServerPid(void); // call fallback or return the pid_t of the running server
 
         /* server */
-        void load(void); // load cfg/sysprompt (only loaded one time at init)
+        void load(void); // load rules/sysprompt (only loaded one time at init)
+        void loadPlugin(const std::string& path);
         void loadCFG(const std::string& path);
         void loadLLM(void);
         void formatCFG(const std::string& bin, std::string& input) const;

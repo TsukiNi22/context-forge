@@ -8,18 +8,18 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 19/09/2026 by @author Tsukini
+##  @date 20/09/2026 by @author Tsukini
 
 File Name:
-##  @file IRule.hpp
+##  @file IInstruction.hpp
 
 File Description:
 ##  You know, I don t think there are good or bad descriptions,
 ##  for me, life is all about functions...
 \**************************************************************/
 
-#ifndef IRULE_H
-    #define IRULE_H
+#ifndef IINSTRUCTION_H
+    #define IINSTRUCTION_H
 
     //----------------------------------------------------------------//
     /* INCLUDE */
@@ -29,30 +29,29 @@ File Description:
     #include <libconfig.h++>                        // libconfig::Setting
     #include <string>                               // std::string
 
-namespace forge::cfg { // namespace start
+namespace forge::rules { // namespace start
 //----------------------------------------------------------------//
 /* CLASS */
 
 // class that will probably be in shared object (.so) -> apply observer for potential memory leak
-class IRule: private utils::security::observer::Observer<"IRule"> {
+class IInstruction: private utils::security::observer::Observer<"IInstruction"> {
     public:
         // ---------- Pre-Function -------- //
-        virtual std::string name(void) const;
+        virtual std::string name(void) const; // used only for debug purpose on server side
         virtual void load(const libconfig::Setting& s);
-        virtual void format(std::string& content);
 
         // ------------ Operator ---------- //
-        IRule& operator=(const IRule& other) = delete;
-        IRule& operator=(IRule&& other) = delete;
+        IInstruction& operator=(const IInstruction& other) = delete;
+        IInstruction& operator=(IInstruction&& other) = delete;
 
         // ---------- Constructor --------- //
-        IRule() = default;
-        IRule(const IRule& other) = delete;
-        IRule(IRule&& other) = delete;
+        IInstruction() = default;
+        IInstruction(const IInstruction& other) = delete;
+        IInstruction(IInstruction&& other) = delete;
 
         // ----------- Destructor --------- //
-        virtual ~IRule() = default;
+        virtual ~IInstruction() = default;
 };
 
 } // namespace end
-#endif /* IRULE_H */
+#endif /* IINSTRUCTION_H */
