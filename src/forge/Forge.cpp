@@ -26,6 +26,7 @@ File Description:
 #include <utils/utils.hpp>
 #include "forge/Forge.hpp"
 #include <stdlib.h>
+#include <unistd.h>
 #include <string_view>
 #include <filesystem>
 #include <fstream>
@@ -37,6 +38,8 @@ File Description:
 
 void forge::Forge::run(void)
 {
+    onDebugVerbose("pid: " << ::getpid());
+
     // Dispatch to selected mode
     if (!this->_settings.contains("mode"))
         throw utils::exception::ErrorException(utils::exception::InternalCode::Process, "No mode specified, use -h to see avaible modes");
