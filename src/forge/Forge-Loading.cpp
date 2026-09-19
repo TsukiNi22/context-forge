@@ -90,6 +90,10 @@ void forge::Forge::loadCFG(const std::string& path)
         throw utils::exception::ErrorException(utils::exception::ExternalCode::Rules, "Parse error at " + std::string(e.getFile()) + ":" + std::to_string(e.getLine()) + " - " + std::string(e.getError()));
     }
 
+    // for each setting
+    /*for () {
+    }*/
+
     /*
     // Reading rules
     std::string name;

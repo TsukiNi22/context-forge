@@ -11,48 +11,57 @@ Edition:
 ##  @date 19/09/2026 by @author Tsukini
 
 File Name:
-##  @file IRule.hpp
+##  @file Rules.hpp
 
 File Description:
 ##  You know, I don t think there are good or bad descriptions,
 ##  for me, life is all about functions...
 \**************************************************************/
 
-#ifndef IRULE_H
-    #define IRULE_H
+#ifndef RULES_H
+    #define RULES_H
 
     //----------------------------------------------------------------//
     /* INCLUDE */
 
     /* type */
-    #include <utils/security/observer/Observer.hpp> // utils::security::observer::Observer
-    #include <libconfig.h++>                        // libconfig::Setting
-    #include <string>                               // std::string
+    #define _Attribute
+    #include <utls/utils.hpp>   // _hot, _nodiscard
+    #include "IRule.hpp"        // forge::cfg::IRule
+    #include <unordered_map>    // std::unordered_map
+    #include <memory>           // std::unique_ptr
+    #include <vector>           // std::vector
+    #include <string>           // std::string
 
 namespace forge::cfg { // namespace start
 //----------------------------------------------------------------//
 /* CLASS */
 
-// class that will probably be in shared object (.so) -> apply observer for potential memory leak
-class IRule: private utils::security::observer::Observer<"IRule"> {
+class Rules {
+    private:
+        const std::unordered_map<std::string, std::unique_ptr<forge::cfg::IRule>>& _rule;
+        std::vector<std::string> _rules;
+
     public:
         // ---------- Pre-Function -------- //
-        virtual void std::string name(void) const;
-        virtual void load(cons libconfig::Setting& s);
-        virtual void format(std::string& content);
+        _hot _nodiscard bool trigger(const std::string& bin, const std::string& content) const;
+        _hot void apply(std::string& content) const;
+
+        // ------------ Function ---------- //
+        _cold void push(const std::string& name) {this->_rules.push_back(name);};
 
         // ------------ Operator ---------- //
-        IRule& operator=(const IRule& other) = delete;
-        IRule& operator=(IRule&& other) = delete;
+        Rules& operator=(const Rules& other) = delete;
+        Rules& operator=(Rules&& other) = delete;
 
         // ---------- Constructor --------- //
-        IRule() = default;
-        IRule(const IRule& other) = delete;
-        IRule(IRule&& other) = delete;
+        Rules(const std::unordered_map<std::string, std::unique_ptr<forge::cfg::IRule>>& rule) _rule{rule} {};
+        Rules(const Rules& other) = delete;
+        Rules(Rules&& other) = delete;
 
         // ----------- Destructor --------- //
-        virtual ~IRule() = default;
+        ~Rules() = default;
 };
 
 } // namespace end
-#endif /* IRULE_H */
+#endif /* RULES_H */

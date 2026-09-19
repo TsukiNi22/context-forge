@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 18/09/2026 by @author Tsukini
+##  @date 19/09/2026 by @author Tsukini
 
 File Name:
 ##  @file Forge.hpp
@@ -28,8 +28,12 @@ File Description:
     #define _Arguments
     #define _Encapsulation
     #include <utils/utils.hpp>  // utils::arguments::Settings, utils::encapsulation::Status
+    #include "cfg/IRule.hpp"    // forge::cfg::IRule
+    #include "cfg/Rules.hpp"    // forge::cfg::Rules   
     #include <sys/types.h>      // pid_t
+    #include <unordered_map>    // std::unordered_map
     #include <cstddef>          // std::byte
+    #include <memory>           // std::unique_ptr
     #include <vector>           // std::vector
     #include <string>           // std::string
 
@@ -49,6 +53,10 @@ class Forge {
     private:
         /* arguments */
         utils::arguments::Settings _settings;
+
+        /* server execution */
+        std::unordered_map<std::string, std::unique_ptr<forge::cfg::IRule>> _rule;
+        std::vector<forge::cfg::Rules> _rules;
 
         /* client execution */
         std::string _bin;
