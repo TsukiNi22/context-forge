@@ -30,6 +30,7 @@ File Description:
 #include <filesystem>
 #include <fstream>
 #include <sstream>
+#include <cstdint>
 #include <vector>
 #include <string>
 #include <array>
@@ -104,9 +105,10 @@ void forge::Forge::setup(void)
 
     if (this->_settings.contains("recursive")) service_content << " --recursive";
     if (this->_settings.contains("verbose"))   service_content << " --verbose " << (std::string)this->_settings.at("verbose");
+    if (this->_settings.contains("plugins"))   service_content << " --plugins " << std::filesystem::absolute((std::string)this->_settings.at("plugins")).string();
     if (this->_settings.contains("rules"))     service_content << " --rules "   << std::filesystem::absolute((std::string)this->_settings.at("rules")).string();
     if (this->_settings.contains("ip"))        service_content << " --ip "      << (std::string)this->_settings.at("ip");
-    if (this->_settings.contains("port"))      service_content << " --port "    << (std::string)this->_settings.at("port");
+    if (this->_settings.contains("port"))      service_content << " --port "    << std::to_string((std::uint16_t)this->_settings.at("port"));
     if (this->_settings.contains("model"))     service_content << " --model "   << (std::string)this->_settings.at("model");
     if (this->_settings.contains("system-prompt")) service_content << " --system-prompt " << std::filesystem::absolute((std::string)this->_settings.at("system-prompt")).string();
     service_content << std::endl;
@@ -234,7 +236,7 @@ void forge::Forge::status(void)
 
     // check if the ollama server is running
     std::string ip = (this->_settings.contains("ip") ? (std::string)this->_settings.at("ip") : "localhost");
-    std::string port = (this->_settings.contains("port") ? (std::string)this->_settings.at("port") : "11434");
+    std::string port = (this->_settings.contains("port") ? std::to_string((std::uint16_t)this->_settings.at("port")) : "11434");
     const std::string ollama_status = exec("curl -s --max-time 1 http://" + ip + ":" + port + "/api/tags >/dev/null && echo running || echo stopped");
     if (ollama_status == "running")
         std::cout << utils::iomanip::color_rgb(46, 204, 113) << "running";

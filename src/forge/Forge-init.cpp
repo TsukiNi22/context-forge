@@ -53,6 +53,7 @@ void forge::Forge::init(int argc, const char *const argv[])
         false,
         {
             {"setup", true},
+            {"plugins", false},
             {"rules", false},
             {"recursive", false},
             {"ip", false},
@@ -134,6 +135,7 @@ void forge::Forge::init(int argc, const char *const argv[])
         false,
         {
             {"server", true},
+            {"plugins", false},
             {"rules", false},
             {"recursive", false},
             {"ip", false},
@@ -207,18 +209,26 @@ void forge::Forge::init(int argc, const char *const argv[])
         "Command to exec during the client runtime",
         true
     );
+    parser.setFlag("plugins",
+        {"p", "so", "plugins", ""},
+        {
+            //{"path", true, utils::arguments::defaultDirectoryParsingHook}
+            {"path", true, utils::arguments::defaultTrueParsingHook}
+        },
+        "Path of the directory for the rules's shared object (plugins) used to edit the context (<path>/*.so)"
+    );
     parser.setFlag("rules",
         {"r", "rules", "rules", ""},
         {
             //{"path", true, utils::arguments::defaultDirectoryParsingHook}
             {"path", true, utils::arguments::defaultTrueParsingHook}
         },
-        "Path of the directory for the rules used to edit the context (<dir_path>/*.cfg)"
+        "Path of the directory for the rules used to edit the context (<path>/*.cfg)"
     );
     parser.setFlag("recursive",
         {"R", "rec", "recursive", ""},
         {},
-        "Enable the recursive search for rules in the given directory"
+        "Enable the recursive search for rules/plugins in the given directorys"
     );
     parser.setFlag("ip",
         {"a", "ip", "ip", "CONTEXT_FORGE_HOST_IPV4"},
@@ -262,10 +272,11 @@ void forge::Forge::init(int argc, const char *const argv[])
             else if (value == "debug")    set_verbose(Debug)
         }
         else if (id == "redirect") this->_settings.cast<utils::arguments::CastType::Int32>("redirect", value);
+        else if (id == "plugins") this->_settings.add("plugins", value);
         else if (id == "rules") this->_settings.add("rules", value);
         else if (id == "recursive") this->_settings.add("recursive", true);
         else if (id == "ip") this->_settings.add("ip", value);
-        else if (id == "port") this->_settings.add("port", value);
+        else if (id == "port") this->_settings.cast<utils::arguments::CastType::UInt16>("port", value);
         else if (id == "model") this->_settings.add("model", value);
         else if (id == "system-prompt") this->_settings.add("system-prompt", value);
         else if (id == "command") {

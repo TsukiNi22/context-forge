@@ -19,6 +19,7 @@ File Description:
 \**************************************************************/
 
 #define _Manip
+#define _Network
 #define _Attribute
 #define _Exception
 #define _Verbose
@@ -28,6 +29,7 @@ File Description:
 #include <libconfig.h++>
 #include <filesystem>
 #include <iostream>
+#include <cstdint>
 #include <string>
 
 void forge::Forge::load(void)
@@ -100,6 +102,21 @@ void forge::Forge::loadCFG(const std::string& path)
     */
 }
 
+#define quick_fallback(t, s, fallback) (this->_settings.contains(s) ? (t)this->_settings.at(s) : fallback)
 void forge::Forge::loadLLM(void)
 {
+    const std::string model = quick_fallback(std::string, "model", "qwen2.5-coder:1.5b");
+    const std::string syprompt = quick_fallback(std::string, "system-prompt", "");
+
+    // resolve ollama address
+    utils::network::Address addr;
+    addr.ip.first = quick_fallback(std::string, "ip", "localhost");
+    addr.port = quick_fallback(std::uint16_t, "port", 11434);
+    utils::network::socket::resolve_address(addr);
+
+    /*
+     * open socket with ollama
+     * check if model exists
+     * up it and keep it alive using schedule (10min~ & 0s when exit)
+    */
 }
