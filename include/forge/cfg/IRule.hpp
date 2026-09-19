@@ -37,8 +37,8 @@ namespace forge::cfg { // namespace start
 class IRule: private utils::security::observer::Observer<"IRule"> {
     public:
         // ---------- Pre-Function -------- //
-        virtual void std::string name(void) const;
-        virtual void load(cons libconfig::Setting& s);
+        virtual std::string name(void) const;
+        virtual void load(const libconfig::Setting& s);
         virtual void format(std::string& content);
 
         // ------------ Operator ---------- //

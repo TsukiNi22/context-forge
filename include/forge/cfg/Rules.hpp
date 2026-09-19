@@ -26,7 +26,7 @@ File Description:
 
     /* type */
     #define _Attribute
-    #include <utls/utils.hpp>   // _hot, _nodiscard
+    #include <utils/utils.hpp>  // _hot, _nodiscard
     #include "IRule.hpp"        // forge::cfg::IRule
     #include <unordered_map>    // std::unordered_map
     #include <memory>           // std::unique_ptr
@@ -55,7 +55,7 @@ class Rules {
         Rules& operator=(Rules&& other) = delete;
 
         // ---------- Constructor --------- //
-        Rules(const std::unordered_map<std::string, std::unique_ptr<forge::cfg::IRule>>& rule) _rule{rule} {};
+        Rules(const std::unordered_map<std::string, std::unique_ptr<forge::cfg::IRule>>& rule): _rule{rule} {};
         Rules(const Rules& other) = delete;
         Rules(Rules&& other) = delete;
 

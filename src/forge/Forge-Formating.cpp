@@ -26,10 +26,10 @@ File Description:
 #include "forge/Forge.hpp"
 #include <string>
 
-void forge::Forge::formatCFG(std::string& input) const
+void forge::Forge::formatCFG(const std::string& bin, std::string& input) const
 {
 }
 
-void forge::Forge::formatLLM(std::string& input) const
+void forge::Forge::formatLLM(const std::string& bin, std::string& input) const
 {
 }

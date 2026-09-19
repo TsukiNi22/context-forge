@@ -26,7 +26,7 @@ File Description:
 
     /* type */
     #define _Attribute
-    #include <utls/utils.hpp>   // _cold, _nodiscard
+    #include <utils/utils.hpp>  // _cold, _nodiscard
     #include "IRule.hpp"        // forge::cfg::IRule
     #include <string>           // std::string
 

@@ -72,8 +72,8 @@ class Forge {
         void load(void); // load cfg/sysprompt (only loaded one time at init)
         void loadCFG(const std::string& path);
         void loadLLM(void);
-        void formatCFG(std::string& input) const;
-        void formatLLM(std::string& input) const;
+        void formatCFG(const std::string& bin, std::string& input) const;
+        void formatLLM(const std::string& bin, std::string& input) const;
 
         /* dispatch */
         void setup(void);

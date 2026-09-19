@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 18/09/2026 by @author Tsukini
+##  @date 19/09/2026 by @author Tsukini
 
 File Name:
 ##  @file Forge-Client.cpp
@@ -156,13 +156,13 @@ void forge::Forge::exec(void)
     onAdvancedVerbose("----------------- [Execution] -----------------");
 
     // Send the information
-    std::vector<std::byte> bytes = stringToBytes(output);
-    std::size_t channel_used = (bytes.size() / CHANNEL_SIZE) + (bytes.size() % CHANNEL_SIZE != 0);
+    constexpr std::size_t headerSize = sizeof(std::uint32_t);
+    constexpr std::size_t payloadSize = CHANNEL_SIZE - headerSize;
+    std::vector<std::byte> bytes = stringToBytes(this->_bin + std::string(1, static_cast<char>(utils::iomanip::Char::DLE)) + output);
+    std::size_t channel_used = (bytes.size() / payloadSize) + ((bytes.size() % payloadSize) != 0);
     if (channel_used == 0) channel_used = 1; // always send at least one string even empty
 
     // function to select chunk of the bytes
-    constexpr std::size_t headerSize = sizeof(std::uint32_t);
-    constexpr std::size_t payloadSize = CHANNEL_SIZE - headerSize;
     auto chunkAt = [&bytes, payloadSize](std::size_t index) -> std::vector<std::byte> {
         std::size_t offset = index * payloadSize;
         std::size_t len = std::min(payloadSize, bytes.size() - offset);

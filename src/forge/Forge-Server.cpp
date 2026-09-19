@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 18/09/2026 by @author Tsukini
+##  @date 19/09/2026 by @author Tsukini
 
 File Name:
 ##  @file Forge-Server.cpp
@@ -18,6 +18,7 @@ File Description:
 ##  for me, life is all about functions...
 \**************************************************************/
 
+#define _IOManip
 #define _Attribute
 #define _Exception
 #define _Verbose
@@ -59,7 +60,7 @@ void forge::Forge::server(void)
         shm.join(true); // wait for any full awnser
         onAdvancedVerbose("new transmition!");
         std::optional<std::unordered_map<utils::encapsulation::shm::Id, std::vector<std::vector<std::byte>>>> payloads = shm.read(utils::encapsulation::shm::ReadFilter::LastOnly);
-        std::unordered_map<utils::encapsulation::shm::Id, std::string> inputs;
+        std::unordered_map<utils::encapsulation::shm::Id, std::pair<std::string, std::string>> inputs;
 
         // Format the return
         onAdvancedVerbose("reading...");
@@ -67,7 +68,7 @@ void forge::Forge::server(void)
             for (const auto& [id, sub_payloads]: *payloads) {
                 std::vector<std::pair<std::uint32_t, std::vector<std::byte>>> chunks;
                 chunks.reserve(sub_payloads.size());
-                std::string& input = inputs[id];
+                auto& [bin, content] = inputs[id];
 
                 // separate the index and content from the payload
                 for (const std::vector<std::byte>& chunk: sub_payloads) {
@@ -83,19 +84,28 @@ void forge::Forge::server(void)
                 // reserve the formated output size and reassemble it
                 std::size_t size = 0;
                 for (const auto& [_, payload]: chunks) size += payload.size();
-                input.reserve(size);
+                content.reserve(size);
                 for (const auto& [_, payload]: chunks)
-                    input.append(reinterpret_cast<const char*>(payload.data()), payload.size());
+                    content.append(reinterpret_cast<const char*>(payload.data()), payload.size());
+
+                // extract bin from content
+                const std::size_t pos = content.find(static_cast<char>(utils::iomanip::Char::DLE));
+                if (pos != std::string::npos) {
+                    bin = content.substr(0, pos);
+                    content.erase(0, pos + 1);
+                }
             }
         }
 
         // display for debug purpose transmition
         onDebugVerboseFn(
             std::cout << "--------- [transmitions] ---------" << std::endl;
-            for (const auto& [_, input]: inputs) {
+            for (const auto& [id, input]: inputs) {
                 std::cout
                 << "----- start -----" << std::endl
-                << input
+                << "from: " << id.ownership << std::endl
+                << "binary: " << input.first << std::endl
+                << "content: " << std::endl << input.second << std::endl
                 << "------ end ------" << std::endl
                 ;
             }
@@ -105,14 +115,15 @@ void forge::Forge::server(void)
         // Pass throught internal formating
         onAdvancedVerbose("formating...");
         for (auto& [_, input]: inputs) {
-            this->formatCFG(input); // rules files (*.cfg)
-            this->formatLLM(input); // llm (with ollama)
+            auto& [bin, content] = input;
+            this->formatCFG(bin, content); // rules files (*.cfg)
+            this->formatLLM(bin, content); // llm (with ollama)
         }
 
         // Send the information
         onAdvancedVerbose("sending...");
         for (const auto& [_, input]: inputs) {
-            std::vector<std::byte> bytes = stringToBytes(input);
+            std::vector<std::byte> bytes = stringToBytes(input.second);
             std::size_t channel_used = (bytes.size() / CHANNEL_SIZE) + (bytes.size() % CHANNEL_SIZE != 0);
             if (channel_used == 0) channel_used = 1; // always send at least one string even empty
 
