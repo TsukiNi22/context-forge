@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 18/09/2026 by @author Tsukini
+##  @date 19/09/2026 by @author Tsukini
 
 File Name:
 ##  @file Forge-Formating.cpp
@@ -25,10 +25,6 @@ File Description:
 #include <utils/utils.hpp>
 #include "forge/Forge.hpp"
 #include <string>
-
-void forge::Forge::load(void)
-{
-}
 
 void forge::Forge::formatCFG(std::string& input) const
 {

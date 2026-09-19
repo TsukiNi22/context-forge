@@ -62,6 +62,8 @@ class Forge {
 
         /* server */
         void load(void); // load cfg/sysprompt (only loaded one time at init)
+        void loadCFG(const std::string& path);
+        void loadLLM(void);
         void formatCFG(std::string& input) const;
         void formatLLM(std::string& input) const;
 

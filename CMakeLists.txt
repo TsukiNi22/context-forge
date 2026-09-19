@@ -17,8 +17,9 @@ add_compile_definitions(BACKWARD_COMPATIBILITY_WARNING) # To check internal usag
 # Requirement
 # =========================
 find_package(utils 2.13.18 CONFIG REQUIRED) # Check utils dependencies existance
-find_package(PkgConfig REQUIRED)
 find_package(Python3 REQUIRED) # Used for the special dependencie
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LIBCONFIGXX REQUIRED IMPORTED_TARGET libconfig++)
 find_program(CCACHE_PROGRAM ccache) # Used for cache during compilation
 if (CCACHE_PROGRAM)
     set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE_PROGRAM})
@@ -50,6 +51,7 @@ set(SRC
     src/forge/Forge-Client.cpp
     src/forge/Forge-Server.cpp
     src/forge/Forge-Formating.cpp
+    src/forge/Forge-Loading.cpp
 )
 add_executable(${TARGET} ${SRC})
 
@@ -89,7 +91,7 @@ add_custom_target(release
 # Dependencies
 # =========================
 target_include_directories(${TARGET} PRIVATE include include/exception)
-target_link_libraries(${TARGET} PRIVATE utils::utils)
+target_link_libraries(${TARGET} PRIVATE PkgConfig::LIBCONFIGXX utils::utils)
 add_dependencies(${TARGET} generated_external_exception_header)
 
 # =========================

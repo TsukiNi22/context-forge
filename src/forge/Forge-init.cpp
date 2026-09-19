@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 18/09/2026 by @author Tsukini
+##  @date 19/09/2026 by @author Tsukini
 
 File Name:
 ##  @file Forge-init.cpp
@@ -54,6 +54,7 @@ void forge::Forge::init(int argc, const char *const argv[])
         {
             {"setup", true},
             {"rules", false},
+            {"recursive", false},
             {"ip", false},
             {"port", false},
             {"model", false},
@@ -134,6 +135,7 @@ void forge::Forge::init(int argc, const char *const argv[])
         {
             {"server", true},
             {"rules", false},
+            {"recursive", false},
             {"ip", false},
             {"port", false},
             {"model", false},
@@ -208,9 +210,15 @@ void forge::Forge::init(int argc, const char *const argv[])
     parser.setFlag("rules",
         {"r", "rules", "rules", ""},
         {
-            {"path", true, utils::arguments::defaultFileParsingHook}
+            //{"path", true, utils::arguments::defaultDirectoryParsingHook}
+            {"path", true, utils::arguments::defaultTrueParsingHook}
         },
-        "Path for the rules used to edit the context"
+        "Path of the directory for the rules used to edit the context (<dir_path>/*.cfg)"
+    );
+    parser.setFlag("recursive",
+        {"R", "rec", "recursive", ""},
+        {},
+        "Enable the recursive search for rules in the given directory"
     );
     parser.setFlag("ip",
         {"a", "ip", "ip", "CONTEXT_FORGE_HOST_IPV4"},
@@ -242,7 +250,7 @@ void forge::Forge::init(int argc, const char *const argv[])
     );
 
     // Extract settings
-    utils::arguments::ParsedUsages usages = parser.parse(argc, argv);
+    utils::arguments::ParsedUsages usages = parser.parse(argc, argv, true);
     for (const auto& [id, type, options]: usages.front().arguments) {
         const std::string& value = (options.empty() ? "" : options.front());
         if (type) this->_settings.add("mode", value); // detect mode from first options
@@ -255,6 +263,7 @@ void forge::Forge::init(int argc, const char *const argv[])
         }
         else if (id == "redirect") this->_settings.cast<utils::arguments::CastType::Int32>("redirect", value);
         else if (id == "rules") this->_settings.add("rules", value);
+        else if (id == "recursive") this->_settings.add("recursive", true);
         else if (id == "ip") this->_settings.add("ip", value);
         else if (id == "port") this->_settings.add("port", value);
         else if (id == "model") this->_settings.add("model", value);

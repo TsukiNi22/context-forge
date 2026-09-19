@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 18/09/2026 by @author Tsukini
+##  @date 19/09/2026 by @author Tsukini
 
 File Name:
 ##  @file Forge.cpp
@@ -27,6 +27,7 @@ File Description:
 #include "forge/Forge.hpp"
 #include <stdlib.h>
 #include <string_view>
+#include <filesystem>
 #include <fstream>
 #include <sstream>
 #include <vector>
@@ -37,7 +38,7 @@ void forge::Forge::run(void)
 {
     // Dispatch to selected mode
     if (!this->_settings.contains("mode"))
-        throw utils::exception::ErrorException(utils::exception::InternalCode::Process, "No mode specified, use (setup|remove|install-ollama|exec|server)");
+        throw utils::exception::ErrorException(utils::exception::InternalCode::Process, "No mode specified, use -h to see avaible modes");
 
     const std::string& mode = this->_settings.at("mode");
     if (mode == "setup") this->setup();
@@ -101,12 +102,13 @@ void forge::Forge::setup(void)
     service_content << "RestartSec=2" << std::endl;
     service_content << "ExecStart=" << binary_path << " server";
 
-    if (this->_settings.contains("verbose")) service_content << " --verbose " << (std::string)this->_settings.at("verbose");
-    if (this->_settings.contains("rules"))   service_content << " --rules " << (std::string)this->_settings.at("rules");
-    if (this->_settings.contains("ip"))      service_content << " --ip "    << (std::string)this->_settings.at("ip");
-    if (this->_settings.contains("port"))    service_content << " --port "  << (std::uint16_t)this->_settings.at("port");
-    if (this->_settings.contains("model"))   service_content << " --model " << (std::string)this->_settings.at("model");
-    if (this->_settings.contains("system-prompt")) service_content << " --system-prompt " << (std::string)this->_settings.at("system-prompt");
+    if (this->_settings.contains("recursive")) service_content << " --recursive";
+    if (this->_settings.contains("verbose"))   service_content << " --verbose " << (std::string)this->_settings.at("verbose");
+    if (this->_settings.contains("rules"))     service_content << " --rules "   << std::filesystem::absolute((std::string)this->_settings.at("rules")).string();
+    if (this->_settings.contains("ip"))        service_content << " --ip "      << (std::string)this->_settings.at("ip");
+    if (this->_settings.contains("port"))      service_content << " --port "    << (std::string)this->_settings.at("port");
+    if (this->_settings.contains("model"))     service_content << " --model "   << (std::string)this->_settings.at("model");
+    if (this->_settings.contains("system-prompt")) service_content << " --system-prompt " << std::filesystem::absolute((std::string)this->_settings.at("system-prompt")).string();
     service_content << std::endl;
 
     service_content << std::endl;
