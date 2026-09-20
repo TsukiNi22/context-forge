@@ -196,6 +196,7 @@ void forge::Forge::loadCFG(const std::string& path)
 
     // for each setting try to dispatch to a know one factory and add it to the rules
     forge::rules::Rules rules;
+    rules.path(path);
     for (const libconfig::Setting& s: root) {
         const std::string name = s.getName();
         if (name == "enable") _unlikely {continue;}
@@ -218,6 +219,9 @@ void forge::Forge::loadCFG(const std::string& path)
             );
         }
     }
+
+    // store the rules
+    this->_rules.push_back(std::move(rules));
 }
 
 void forge::Forge::loadLLM(void)

@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 19/09/2026 by @author Tsukini
+##  @date 20/09/2026 by @author Tsukini
 
 File Name:
 ##  @file Forge-Formating.cpp
@@ -28,8 +28,17 @@ File Description:
 
 void forge::Forge::formatCFG(const std::string& bin, std::string& input) const
 {
+    // apply each rules
+    for (const forge::rules::Rules& rules: this->_rules) {
+        if (rules.trigger(bin, input)) {
+            onDebugVerbose("----- [RULES] -----");
+            onDebugVerbose("apply: " << rules.path());
+            rules.apply(bin, input);
+        }
+    }
 }
 
 void forge::Forge::formatLLM(const std::string& bin, std::string& input) const
 {
+    onDebugVerbose("----- [LLM] -----")
 }

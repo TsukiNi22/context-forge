@@ -41,9 +41,20 @@ namespace forge::rules { // namespace start
 
 class Rules {
     private:
+        std::string _path = "[none]";
         std::vector<std::unique_ptr<forge::rules::ITrigger>> _triggers; // no trigger == always true
         std::vector<std::unique_ptr<forge::rules::IPreRule>> _pre; // optional step
         std::vector<std::unique_ptr<forge::rules::IRule>> _rules;
+
+        /* block hard-coded plugin */
+        bool _enable = false;
+        int _ln = 0;
+        int _char = 0;
+        int _show = 0;
+        std::string _sep = "";
+
+        // ---------- Pre-Function -------- //
+        std::vector<std::string> applyBlock(const std::string& content) const;
 
     public:
         // ---------- Pre-Function -------- //
@@ -52,18 +63,20 @@ class Rules {
         void apply(const std::string& bin, std::string& content) const;
 
         // ------------ Function ---------- //
-        _cold void push(std::unique_ptr<forge::rules::ITrigger>&& trigger) {this->_triggers.emplace_back(std::move(trigger));};
-        _cold void push(std::unique_ptr<forge::rules::IPreRule>&& pre) {this->_pre.emplace_back(std::move(pre));};
-        _cold void push(std::unique_ptr<forge::rules::IRule>&& rule) {this->_rules.emplace_back(std::move(rule));};
+        _hot inline void path(const std::string& path) {this->_path = path;};
+        _hot _nodiscard inline std::string path(void) const {return this->_path;};
+        _hot inline void push(std::unique_ptr<forge::rules::ITrigger>&& trigger) {this->_triggers.emplace_back(std::move(trigger));};
+        _hot inline void push(std::unique_ptr<forge::rules::IPreRule>&& pre) {this->_pre.emplace_back(std::move(pre));};
+        _hot inline void push(std::unique_ptr<forge::rules::IRule>&& rule) {this->_rules.emplace_back(std::move(rule));};
 
         // ------------ Operator ---------- //
         Rules& operator=(const Rules& other) = delete;
-        Rules& operator=(Rules&& other);
+        Rules& operator=(Rules&& other) = default;
 
         // ---------- Constructor --------- //
         Rules() = default;
         Rules(const Rules& other) = delete;
-        Rules(Rules&& other);
+        Rules(Rules&& other) = default;
 
         // ----------- Destructor --------- //
         ~Rules() = default;

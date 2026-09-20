@@ -35,7 +35,7 @@ namespace forge::rules { // namespace start
 class ITrigger: public forge::rules::AInstruction {
     public:
         // ---------- Pre-Function -------- //
-        virtual bool trigger(const std::string& bin, std::string& content);
+        virtual bool trigger(const std::string& bin, const std::string& content);
 
         // ------------ Operator ---------- //
         ITrigger& operator=(const ITrigger& other) = delete;
