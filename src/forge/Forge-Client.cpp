@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 20/09/2026 by @author Tsukini
+##  @date 21/09/2026 by @author Tsukini
 
 File Name:
 ##  @file Forge-Client.cpp
@@ -175,28 +175,25 @@ void forge::Forge::exec(void)
 
     // Send all chunk
     onAdvancedVerbose("sending...");
-    utils::encapsulation::shm::Id id = shm.send(chunkAt(0), (channel_used == 1), true);
+    const utils::encapsulation::shm::Target target(1, pid);
+    const utils::encapsulation::shm::Id id = shm.send(chunkAt(0), target, (channel_used == 1), false, true);
     for (std::size_t i = 1; i < channel_used; ++i)
-        shm.send(chunkAt(i), id, (i == channel_used - 1), true);
+        shm.send(chunkAt(i), id, target, (i == channel_used - 1), false, true);
 
     // Get the information
-    shm.join(true); // wait for the full awnser
-    std::optional<std::unordered_map<utils::encapsulation::shm::Id, std::vector<std::vector<std::byte>>>> payloads = shm.read(utils::encapsulation::shm::ReadFilter::LastOnly);
+    onAdvancedVerbose("waiting...");
+    shm.join(id, true); // wait for the full awnser
+    std::optional<std::vector<std::vector<std::byte>>> payloads = shm.read(id);
     std::string formated;
 
     // Get the server return
     onAdvancedVerbose("reading...");
     if (payloads.has_value()) _likely {
-        // shouldn't await multiple awnser
-        if (payloads->size() != 1) _unlikely {
-            throw utils::exception::FatalException(utils::exception::InternalCode::Process, "shouldn't have read more than one communication from the server: " + std::to_string(payloads->size()));
-        }
-        std::vector<std::vector<std::byte>> sub_payloads = payloads->begin()->second;
         std::vector<std::pair<std::uint32_t, std::vector<std::byte>>> chunks;
-        chunks.reserve(sub_payloads.size());
+        chunks.reserve(payloads->size());
 
         // separate the index and content from the payload
-        for (const std::vector<std::byte>& chunk: sub_payloads) {
+        for (const std::vector<std::byte>& chunk: *payloads) {
             std::uint32_t chunkIndex = 0;
             std::memcpy(&chunkIndex, chunk.data(), headerSize);
             std::vector<std::byte> payload(chunk.begin() + headerSize, chunk.end());

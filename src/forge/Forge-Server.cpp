@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 20/09/2026 by @author Tsukini
+##  @date 21/09/2026 by @author Tsukini
 
 File Name:
 ##  @file Forge-Server.cpp
@@ -57,7 +57,7 @@ void forge::Forge::server(void)
     while (true) {
         // Get the information
         onAdvancedVerbose("waiting for transmition...");
-        shm.join(true); // wait for any full awnser
+        shm.join(true); // wait for any full request
         onAdvancedVerbose("new transmition!");
         std::optional<std::unordered_map<utils::encapsulation::shm::Id, std::vector<std::vector<std::byte>>>> payloads = shm.read(utils::encapsulation::shm::ReadFilter::LastOnly);
         std::unordered_map<utils::encapsulation::shm::Id, std::pair<std::string, std::string>> inputs;
@@ -122,7 +122,7 @@ void forge::Forge::server(void)
 
         // Send the information
         onAdvancedVerbose("sending...");
-        for (const auto& [_, input]: inputs) {
+        for (const auto& [id, input]: inputs) {
             std::vector<std::byte> bytes = stringToBytes(input.second);
             std::size_t channel_used = (bytes.size() / CHANNEL_SIZE) + (bytes.size() % CHANNEL_SIZE != 0);
             if (channel_used == 0) channel_used = 1; // always send at least one string even empty
@@ -139,9 +139,9 @@ void forge::Forge::server(void)
             };
 
             // Send all chunk
-            utils::encapsulation::shm::Id id = shm.send(chunkAt(0), (channel_used == 1), true);
-            for (std::size_t i = 1; i < channel_used; ++i)
-                shm.send(chunkAt(i), id, (i == channel_used - 1), true);
+            const utils::encapsulation::shm::Target target(1, id.ownership);
+            for (std::size_t i = 0; i < channel_used; ++i)
+                shm.send(chunkAt(i), id, target, false, (i == channel_used - 1), true);
         }
     }
 }
