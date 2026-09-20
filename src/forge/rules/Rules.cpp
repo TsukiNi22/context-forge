@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 20/09/2026 by @author Tsukini
+##  @date 21/09/2026 by @author Tsukini
 
 File Name:
 ##  @file Rules.cpp
@@ -118,6 +118,7 @@ _hot _nodiscard std::vector<std::string> forge::rules::Rules::applyBlock(const s
     // separate by ln|char
     if (this->_ln > 0) blocks = split_ln(content, this->_ln);
     else if (this->_char > 0) blocks = split_char(content, this->_char);
+    else blocks.push_back(content);
 
     // keep only n block or all
     if (this->_show > 0 && blocks.size() > static_cast<std::size_t>(this->_show)) blocks.resize(this->_show);

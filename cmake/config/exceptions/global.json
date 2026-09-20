@@ -24,6 +24,11 @@
             "code": "Rules",
             "message": "Error during rules parsing",
             "restrictions": ["Fatal", "Error", "Warning"]
+        },
+        {
+            "code": "Ollama",
+            "message": "Error during llm setup/parsing",
+            "restrictions": ["Fatal", "Error", "Warning"]
         }
    ]
 }

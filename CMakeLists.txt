@@ -18,6 +18,7 @@ add_compile_definitions(BACKWARD_COMPATIBILITY_WARNING) # To check internal usag
 # =========================
 find_package(utils 2.13.18 CONFIG REQUIRED) # Check utils dependencies existance
 find_package(Python3 REQUIRED) # Used for the special dependencie
+find_package(httplib REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBCONFIGXX REQUIRED IMPORTED_TARGET libconfig++)
 find_program(CCACHE_PROGRAM ccache) # Used for cache during compilation
@@ -46,12 +47,17 @@ set(SRC
     src/forge/main.cpp
     src/forge/Forge-init.cpp
 
-    # Exec
+    # Global
     src/forge/Forge.cpp
+
+    # Client
     src/forge/Forge-Client.cpp
+
+    # Server
     src/forge/Forge-Server.cpp
     src/forge/Forge-Formating.cpp
     src/forge/Forge-Loading.cpp
+    src/forge/Ollama.cpp
 
     # Rules
     src/forge/rules/Rules.cpp
@@ -94,7 +100,7 @@ add_custom_target(release
 # Dependencies
 # =========================
 target_include_directories(${TARGET} PRIVATE include include/exception)
-target_link_libraries(${TARGET} PRIVATE PkgConfig::LIBCONFIGXX utils::utils)
+target_link_libraries(${TARGET} PRIVATE PkgConfig::LIBCONFIGXX httplib::httplib utils::utils)
 add_dependencies(${TARGET} generated_external_exception_header)
 
 # =========================

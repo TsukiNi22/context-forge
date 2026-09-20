@@ -29,6 +29,7 @@ File Description:
     #define _Encapsulation
     #include <utils/utils.hpp>  // utils::arguments::Settings, utils::encapsulation::Status, utils::encapsulation::SharedObject
     #include "rules/Rules.hpp"  // forge::rules::Rules   
+    #include "Ollama.hpp"       // forge::Ollama
     #include <sys/types.h>      // pid_t
     #include <unordered_map>    // std::unordered_map
     #include <variant>          // std::variant
@@ -80,6 +81,8 @@ class Forge {
         /* server execution */
         std::unordered_map<std::string, std::pair<forge::PluginFactory, utils::encapsulation::SharedObject>> _plugins;
         std::vector<forge::rules::Rules> _rules;
+        forge::Ollama _ollama;
+        bool _llm = true;
 
         /* client execution */
         std::string _bin;

@@ -126,11 +126,12 @@ void forge::Forge::load(void)
     onDebugVerbose("loading: llm");
     try {this->loadLLM();}
     catch (const utils::exception::IException& e) {
+        this->_llm = false;
+        onDebugVerboseC(std::cerr, e.formated());
         onBasicVerbose(
             utils::iomanip::color_rgb(205, 0, 0) << utils::smanip::format("<strong>[FAILED]<>")
             << utils::smanip::format("<strong> loadLLM: the llm formating part will be ignored until a valid restart<>")
         );
-        onDebugVerboseC(std::cerr, e.formated());
     }
 }
 
@@ -226,8 +227,13 @@ void forge::Forge::loadCFG(const std::string& path)
 
 void forge::Forge::loadLLM(void)
 {
+    const std::string syspromptPath = quick_fallback(std::string, "system-prompt", "");
     const std::string model = quick_fallback(std::string, "model", OLLAMA_DEFAULT_MODEL);
-    const std::string syprompt = quick_fallback(std::string, "system-prompt", "");
+
+    // enable llm only if there is a system-prompt given
+    if (syspromptPath.empty()) _unlikely {
+        throw utils::exception::ErrorException(utils::exception::ExternalCode::InvalidDirectory, "No system-prompt where given, can't proceed to the llm setup");
+    }
 
     // resolve ollama address
     utils::network::Address addr;
@@ -235,9 +241,25 @@ void forge::Forge::loadLLM(void)
     addr.port = quick_fallback(std::uint16_t, "port", OLLAMA_DEFAULT_PORT);
     utils::network::socket::resolve_address(addr);
 
-    /*
-     * open socket with ollama
-     * check if model exists
-     * up it and keep it alive using schedule (10min~ & 0s when exit)
-    */
+    // check the system-prompt file
+    const std::filesystem::path path(syspromptPath);
+    if (!std::filesystem::is_regular_file(path)) {
+        throw utils::exception::ErrorException(utils::exception::ExternalCode::InvalidDirectory, "The system-prompt file doesn't exists (the file was propably removed) or isn't a regular file");
+    }
+
+    // get the system-prompt content
+    std::ifstream file(path, std::ios::binary);
+    if (!file) _unlikely {
+        throw utils::exception::ErrorException(utils::exception::ExternalCode::InvalidDirectory, "I/O error while gettings the system-prompt (the file was propably removed)");
+    }
+    const auto size = std::filesystem::file_size(path);
+
+    // setup the content
+    std::string sysprompt(size, '\0');
+    file.read(sysprompt.data(), static_cast<std::streamsize>(size));
+    sysprompt.resize(static_cast<std::size_t>(file.gcount()));
+
+    // setup ollama client
+    this->_ollama.init(addr, model, sysprompt);
+    this->_ollama.up(); // start the ollama server
 }
