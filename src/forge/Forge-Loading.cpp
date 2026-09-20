@@ -156,6 +156,8 @@ void forge::Forge::loadPlugin(const std::string& path)
     }
     if (this->_plugins.contains(name)) _unlikely {
         throw utils::exception::ErrorException(utils::exception::ExternalCode::Plugins, "Multiple plugins can't have the same name: " + name);
+    } else if (name == "enable" || name == "block") _unlikely { // reserved names
+        throw utils::exception::ErrorException(utils::exception::ExternalCode::Plugins, "A plugins can't use reserved names: enable, block");
     }
 
     // store the plugin
@@ -168,14 +170,7 @@ void forge::Forge::loadPlugin(const std::string& path)
     }
 
     onDebugVerbose(utils::iomanip::strong() << name << utils::iomanip::reset() << ": plugin successfully loaded");
-    //this->_plugins.emplace(name, std::pair{factory, std::move(plugin)});
-this->_plugins.emplace(
-    name,
-    std::pair<PluginFactory, utils::encapsulation::SharedObject>{
-        factory,
-        std::move(plugin)
-    }
-);
+    this->_plugins.emplace(name, std::pair{factory, std::move(plugin)});
 }
 
 void forge::Forge::loadCFG(const std::string& path)
@@ -190,21 +185,39 @@ void forge::Forge::loadCFG(const std::string& path)
     } catch (const libconfig::ParseException& e) {
         throw utils::exception::ErrorException(utils::exception::ExternalCode::Rules, "Parse error at " + std::string(e.getFile()) + ":" + std::to_string(e.getLine()) + " - " + std::string(e.getError()));
     }
+    const libconfig::Setting& root = cfg.getRoot();
 
-    // for each setting try to dispatch to a know one
-    /*for () {
-    }*/
-
-    /*
-    // Reading rules
-    std::string name;
-    if (!cfg.lookupValue("name", name)) {
-        name = "default";
+    // check if the rule is enable
+    bool enable = true;
+    if (root.exists("enable") && !root.lookupValue("enable", enable)) _unlikely {
+        throw utils::exception::ErrorException(utils::exception::ExternalCode::Rules, root["enable"].getPath() + ": only a boolean true|false is allowed");
     }
+    if (!enable) _unlikely {return;}
 
-    int port = 8080;
-    (void)cfg.lookupValue("server.port", port); // supports nested groups: server = { port = 8080; };
-    */
+    // for each setting try to dispatch to a know one factory and add it to the rules
+    forge::rules::Rules rules;
+    for (const libconfig::Setting& s: root) {
+        const std::string name = s.getName();
+        if (name == "enable") _unlikely {continue;}
+        else if (name == "block") _unlikely {rules.loadBlock(s);}
+        else _likely {
+            // check plugin existance
+            if (!this->_plugins.contains(name)) _unlikely {
+                throw utils::exception::ErrorException(utils::exception::ExternalCode::Rules, "Unknow plugin used: " + name);
+            }
+
+            // get & use the plugin factory
+            auto& [factory, _] = this->_plugins.at(name);
+            std::visit([&](const auto& factory) {
+                auto* instance = factory(); // create the plugin instance
+                using Instance = std::remove_pointer_t<decltype(instance)>; // unique_ptr doesn't supports auto type
+                std::unique_ptr<Instance> ptr(instance); // encapsulate the instance for future auto cleanup
+                ptr->load(s); // load the plugin content
+                rules.push(std::move(ptr)); // store the plugin data
+                }, factory
+            );
+        }
+    }
 }
 
 void forge::Forge::loadLLM(void)

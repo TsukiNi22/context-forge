@@ -30,6 +30,7 @@ File Description:
     #include "triggers/ITrigger.hpp"    // forge::rules::ITrigger
     #include "pre-rules/IPreRule.hpp"   // forge::rules::IPreRule
     #include "rules/IRule.hpp"          // forge::rules::IRule
+    #include <libconfig.h++>            // libconfig::Setting
     #include <memory>                   // std::unique_ptr
     #include <vector>                   // std::vector
     #include <string>                   // std::string
@@ -46,8 +47,9 @@ class Rules {
 
     public:
         // ---------- Pre-Function -------- //
-        _hot _nodiscard bool trigger(const std::string& bin, const std::string& content) const;
-        _hot void apply(const std::string& bin, std::string& content) const;
+        void loadBlock(const libconfig::Setting& s);
+        bool trigger(const std::string& bin, const std::string& content) const;
+        void apply(const std::string& bin, std::string& content) const;
 
         // ------------ Function ---------- //
         _cold void push(std::unique_ptr<forge::rules::ITrigger>&& trigger) {this->_triggers.emplace_back(std::move(trigger));};
@@ -56,12 +58,12 @@ class Rules {
 
         // ------------ Operator ---------- //
         Rules& operator=(const Rules& other) = delete;
-        Rules& operator=(Rules&& other) = delete;
+        Rules& operator=(Rules&& other);
 
         // ---------- Constructor --------- //
         Rules() = default;
         Rules(const Rules& other) = delete;
-        Rules(Rules&& other) = delete;
+        Rules(Rules&& other);
 
         // ----------- Destructor --------- //
         ~Rules() = default;
