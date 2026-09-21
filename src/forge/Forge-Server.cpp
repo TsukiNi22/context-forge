@@ -45,6 +45,9 @@ void forge::Forge::server(void)
     onAdvancedVerbose("load ressources (rules, system-prompt, ect)...");
     this->load();
 
+    // exit if we are in checking mode (only allow the loading)
+    if ((std::string)this->_settings.at("mode") == "check") return;
+
     onAdvancedVerbose("create the shm...");
     utils::encapsulation::SharedMemory shm;
     std::string shm_name = SHM_NAME + std::to_string(shm.ownership());

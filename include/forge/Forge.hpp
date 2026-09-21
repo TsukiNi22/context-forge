@@ -51,6 +51,12 @@ File Description:
     #define OLLAMA_DEFAULT_IP "localhost"
     #define OLLAMA_DEFAULT_PORT 11434
 
+    /* path */
+    #define INTERNAL_ROOT "~/.config/context-forge/"
+    #define INTERNAL_PLUGINS       INTERNAL_ROOT"plugins/"
+    #define INTERNAL_RULES         INTERNAL_ROOT"rules/"
+    #define INTERNAL_SYSTEM_PROMPT INTERNAL_ROOT"system-prompt/"
+
     /* type */
     #define TYPE_TRIGGER 0
     #define TYPE_PRE_RULE 1

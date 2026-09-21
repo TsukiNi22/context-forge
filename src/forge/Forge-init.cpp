@@ -33,6 +33,12 @@ _nodiscard static std::optional<std::string> VerboseParsingHook(const std::strin
     return "Invalid verbose level, should be (none|basic|advanced|debug), but got: " + option;
 }
 
+_nodiscard static std::optional<std::string> ModeParsingHook(const std::string& option)
+{
+    if (option == "local" || option == "dist") return std::nullopt;
+    return "Invalid mode, should be (local|dist), but got: " + option;
+}
+
 _nodiscard static std::optional<std::string> FdParsingHook(const std::string& option)
 {
     int fd = 0;
@@ -48,11 +54,29 @@ void forge::Forge::init(int argc, const char *const argv[])
     utils::arguments::ArgParser parser = utils::arguments::ArgParser("context-forge", "A warpper to forge the output of many thing into what you really want!");
 
     // Setup the usages
+    parser.setUsage("context-forge_check",
+        "check",
+        false,
+        {
+            {"check", true},
+            {"mode", true},
+            {"plugins", false},
+            {"rules", false},
+            {"recursive", false},
+            {"ip", false},
+            {"port", false},
+            {"model", false},
+            {"system-prompt", false},
+            {"verbose", false},
+        },
+        "Check the loading of rules & ollama"
+    );
     parser.setUsage("context-forge_setup",
         "setup",
         false,
         {
             {"setup", true},
+            {"copy", false},
             {"plugins", false},
             {"rules", false},
             {"recursive", false},
@@ -157,6 +181,15 @@ void forge::Forge::init(int argc, const char *const argv[])
     );
 
     // Setup the option
+    parser.setOption("check",
+        "check",
+        "Switch to the check mode"
+    );
+    parser.setOption("mode",
+        "mode",
+        ModeParsingHook,
+        "Select the mode to use for the check"
+    );
     parser.setOption("setup",
         "setup",
         "Switch to the setup mode"
@@ -217,6 +250,11 @@ void forge::Forge::init(int argc, const char *const argv[])
             {"fd", true, FdParsingHook}
         },
         "The file descriptor to redirect (default: stderr)"
+    );
+    parser.setFlag("copy",
+        {"c", "cp", "copy", ""},
+        {},
+        "Enable the copy of the file to a internal place during setup (default: disable)"
     );
     parser.setFlag("command",
         {"c", "cmd", "command", ""},
@@ -281,6 +319,7 @@ void forge::Forge::init(int argc, const char *const argv[])
         const std::string& value = (options.empty() ? "" : options.front());
         if (type) {
             if (id == "model-name") this->_settings.add("model", value);
+            else if (id == "mode") this->_settings.add("check-mode", value);
             else this->_settings.add("mode", value); // detect mode from first options
         } else if (id == "verbose") {
             this->_settings.add("verbose", value);
@@ -293,6 +332,7 @@ void forge::Forge::init(int argc, const char *const argv[])
         else if (id == "plugins") this->_settings.add("plugins", value);
         else if (id == "rules") this->_settings.add("rules", value);
         else if (id == "recursive") this->_settings.add("recursive", true);
+        else if (id == "copy") this->_settings.add("copy", true);
         else if (id == "ip") this->_settings.add("ip", value);
         else if (id == "port") this->_settings.cast<utils::arguments::CastType::UInt16>("port", value);
         else if (id == "model") this->_settings.add("model", value);

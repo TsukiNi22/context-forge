@@ -32,9 +32,46 @@ File Description:
 #include <fstream>
 #include <sstream>
 #include <cstdint>
+#include <cstdlib>
 #include <vector>
 #include <string>
 #include <array>
+
+_nodiscard static std::filesystem::path expand_home(const std::string& path)
+{
+    if (path.rfind("~/", 0) != 0) return path;
+    const char* home = std::getenv("HOME");
+    if (!home) throw utils::exception::ErrorException(utils::exception::InternalCode::Process, "HOME is not set, can't expand '~' to clone files");
+    return std::filesystem::path(home) / path.substr(2);
+}
+
+_nodiscard static std::filesystem::path clone_files(const std::filesystem::path& src, const std::filesystem::path& dst, const std::string& ext, bool recursive)
+{
+    if (!std::filesystem::exists(src)) throw utils::exception::ErrorException(utils::exception::InternalCode::Process, "The source does not exist '" + src.string() + "'");
+    std::filesystem::create_directories(dst);
+
+    auto copy_one = [&](const std::filesystem::path& file, const std::filesystem::path& relative) {
+        if (file.extension() != ext) return;
+        const std::filesystem::path target = dst / relative;
+        std::filesystem::create_directories(target.parent_path());
+        if (std::filesystem::exists(target) && std::filesystem::equivalent(file, target)) return;
+        std::filesystem::copy_file(file, target, std::filesystem::copy_options::overwrite_existing);
+    };
+
+    if (std::filesystem::is_regular_file(src)) {
+        copy_one(src, src.filename());
+        return dst / src.filename();
+    }
+
+    if (recursive) {
+        for (const auto& entry: std::filesystem::recursive_directory_iterator(src))
+            if (entry.is_regular_file()) copy_one(entry.path(), std::filesystem::relative(entry.path(), src));
+    } else {
+        for (const auto& entry: std::filesystem::directory_iterator(src))
+            if (entry.is_regular_file()) copy_one(entry.path(), entry.path().filename());
+    }
+    return dst;
+}
 
 void forge::Forge::run(void)
 {
@@ -55,7 +92,7 @@ void forge::Forge::run(void)
     else if (mode == "install-ollama") this->install();
     else if (mode == "pull") this->pull();
     else if (mode == "exec") this->exec();
-    else if (mode == "server") this->server();
+    else if (mode == "check" || mode == "server") this->server();
     else _unlikely {
         throw utils::exception::FatalException(utils::exception::ExternalCode::UnknownMode);
     }
@@ -108,14 +145,40 @@ void forge::Forge::setup(void)
     service_content << "RestartSec=2" << std::endl;
     service_content << "ExecStart=" << binary_path << " server";
 
-    if (this->_settings.contains("recursive")) service_content << " --recursive";
-    if (this->_settings.contains("verbose"))   service_content << " --verbose " << (std::string)this->_settings.at("verbose");
-    if (this->_settings.contains("plugins"))   service_content << " --plugins " << std::filesystem::absolute((std::string)this->_settings.at("plugins")).string();
-    if (this->_settings.contains("rules"))     service_content << " --rules "   << std::filesystem::absolute((std::string)this->_settings.at("rules")).string();
-    if (this->_settings.contains("ip"))        service_content << " --ip "      << (std::string)this->_settings.at("ip");
-    if (this->_settings.contains("port"))      service_content << " --port "    << std::to_string((std::uint16_t)this->_settings.at("port"));
-    if (this->_settings.contains("model"))     service_content << " --model "   << (std::string)this->_settings.at("model");
-    if (this->_settings.contains("system-prompt")) service_content << " --system-prompt " << std::filesystem::absolute((std::string)this->_settings.at("system-prompt")).string();
+    // setup arguments
+    const bool copy = this->_settings.contains("copy");
+    const bool recursive = this->_settings.contains("recursive");
+
+    if (recursive) service_content << " --recursive";
+    if (this->_settings.contains("verbose")) service_content << " --verbose " << (std::string)this->_settings.at("verbose");
+
+    if (this->_settings.contains("plugins")) {
+        std::filesystem::path path = std::filesystem::absolute((std::string)this->_settings.at("plugins"));
+        if (copy) path = clone_files(path, expand_home(INTERNAL_PLUGINS), ".so", recursive);
+        service_content << " --plugins " << path.string();
+    }
+
+    if (this->_settings.contains("rules")) {
+        std::filesystem::path path = std::filesystem::absolute((std::string)this->_settings.at("rules"));
+        if (copy) path = clone_files(path, expand_home(INTERNAL_RULES), ".cfg", recursive);
+        service_content << " --rules " << path.string();
+    }
+
+    if (this->_settings.contains("system-prompt")) {
+        std::filesystem::path path = std::filesystem::absolute((std::string)this->_settings.at("system-prompt"));
+        if (copy) {
+            if (!std::filesystem::is_regular_file(path)) throw utils::exception::ErrorException(utils::exception::InternalCode::Process, "System-prompt must be a single regular file");
+            const std::filesystem::path dst = expand_home(INTERNAL_SYSTEM_PROMPT);
+            std::filesystem::create_directories(dst);
+            std::filesystem::copy_file(path, dst / path.filename(), std::filesystem::copy_options::overwrite_existing);
+            path = dst / path.filename();
+        }
+        service_content << " --system-prompt " << path.string();
+    }
+
+    if (this->_settings.contains("ip"))    service_content << " --ip "    << (std::string)this->_settings.at("ip");
+    if (this->_settings.contains("port"))  service_content << " --port "  << std::to_string((std::uint16_t)this->_settings.at("port"));
+    if (this->_settings.contains("model")) service_content << " --model " << (std::string)this->_settings.at("model");
     service_content << std::endl;
 
     service_content << std::endl;
@@ -283,6 +346,11 @@ void forge::Forge::remove(void)
     utils::encapsulation::Process daemon_reload;
     daemon_reload.spawn("bash", {"-c", "systemctl --user daemon-reload"});
     daemon_reload.wait();
+
+    // Remove filed potentialy clonned
+    onBasicVerbose("Remove any potential files previously cloned...");
+    std::error_code ec;
+    std::filesystem::remove_all(expand_home(INTERNAL_ROOT), ec);
 
     onBasicVerbose("Removal completed successfully!");
 }
