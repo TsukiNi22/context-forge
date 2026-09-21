@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 20/09/2026 by @author Tsukini
+##  @date 21/09/2026 by @author Tsukini
 
 File Name:
 ##  @file Forge-init.cpp
@@ -119,6 +119,15 @@ void forge::Forge::init(int argc, const char *const argv[])
         },
         "Launch the ollama installation script"
     );
+    parser.setUsage("context-forge_pull",
+        "pull",
+        true,
+        {
+            {"pull", true},
+            {"model-name", true},
+        },
+        "Launch the pull of an ollama model"
+    );
     parser.setUsage("context-forge_exec",
         "exec",
         false,
@@ -175,6 +184,15 @@ void forge::Forge::init(int argc, const char *const argv[])
     parser.setOption("install-ollama",
         "install-ollama",
         "Switch to the installation of ollama"
+    );
+    parser.setOption("pull",
+        "pull",
+        "Pull a model for ollama"
+    );
+    parser.setOption("model-name",
+        "model",
+        utils::arguments::defaultTrueParsingHook,
+        "Model to pull"
     );
     parser.setOption("exec",
         "exec",
@@ -261,8 +279,10 @@ void forge::Forge::init(int argc, const char *const argv[])
     utils::arguments::ParsedUsages usages = parser.parse(argc, argv, true);
     for (const auto& [id, type, options]: usages.front().arguments) {
         const std::string& value = (options.empty() ? "" : options.front());
-        if (type) this->_settings.add("mode", value); // detect mode from first options
-        else if (id == "verbose") {
+        if (type) {
+            if (id == "model-name") this->_settings.add("model", value);
+            else this->_settings.add("mode", value); // detect mode from first options
+        } else if (id == "verbose") {
             this->_settings.add("verbose", value);
             if      (value == "none")     set_verbose(None)
             else if (value == "basic")    set_verbose(Basic)

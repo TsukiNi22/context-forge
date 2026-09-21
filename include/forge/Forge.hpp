@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 20/09/2026 by @author Tsukini
+##  @date 21/09/2026 by @author Tsukini
 
 File Name:
 ##  @file Forge.hpp
@@ -110,6 +110,7 @@ class Forge {
         void status(void);
         void remove(void);
         void install(void);
+        void pull(void);
         void exec(void);
         void server(void);
 

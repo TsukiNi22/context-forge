@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 19/09/2026 by @author Tsukini
+##  @date 21/09/2026 by @author Tsukini
 
 File Name:
 ##  @file Forge.cpp
@@ -53,6 +53,7 @@ void forge::Forge::run(void)
     else if (mode == "status") this->status();
     else if (mode == "remove") this->remove();
     else if (mode == "install-ollama") this->install();
+    else if (mode == "pull") this->pull();
     else if (mode == "exec") this->exec();
     else if (mode == "server") this->server();
     else _unlikely {
@@ -307,6 +308,12 @@ void forge::Forge::install(void)
     } else {
         throw utils::exception::ErrorException(utils::exception::InternalCode::Process, "code: " + std::to_string(status.code) + ", sig: " + std::to_string(status.sig));
     }
+}
+
+void forge::Forge::pull(void)
+{
+    utils::encapsulation::Process stop_proc;
+    stop_proc.replace("bash", {"-c", "ollama pull " + (std::string)this->_settings.at("model")});
 }
 
 int forge::Forge::exit(void) const
