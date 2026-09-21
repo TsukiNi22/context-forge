@@ -266,7 +266,7 @@ void forge::Forge::init(int argc, const char *const argv[])
     parser.setFlag("no-nl",
         {"n", "!nl", "no-nl", ""},
         {},
-        "Disable the auto implementation of a `\n` at the end of formated output if missing"
+        "Disable the auto implementation of a `\\n` at the end of formated output if missing"
     );
     parser.setFlag("copy",
         {"C", "cp", "copy", ""},
