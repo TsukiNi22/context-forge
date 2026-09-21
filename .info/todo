@@ -1,0 +1,5 @@
+handle infinite arg for option with '-' or '--'
+plugins content
+auto completion on zsh
+package rmp/deb
+readme + doc & test

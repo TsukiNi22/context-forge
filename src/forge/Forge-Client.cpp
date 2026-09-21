@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 21/09/2026 by @author Tsukini
+##  @date 22/09/2026 by @author Tsukini
 
 File Name:
 ##  @file Forge-Client.cpp
@@ -210,6 +210,10 @@ void forge::Forge::exec(void)
         for (const auto& [_, payload]: chunks)
             formated.append(reinterpret_cast<const char*>(payload.data()), payload.size());
     }
+
+    // alwways end with '\n'
+    if (!this->_settings.contains("no-nl") && (formated.size() > 0 || formated.back() != '\n'))
+        formated += '\n';
 
     // Display the formated version
     onAdvancedVerbose("----------------- [Formated] -----------------");

@@ -167,6 +167,7 @@ void forge::Forge::init(int argc, const char *const argv[])
             {"exec", true},
             {"verbose", false},
             {"redirect", false},
+            {"no-nl", false},
             {"command", true},
         },
         "Client usage, start a warpper around the given commands, communicate with the server to establish connection with other service"
@@ -262,6 +263,11 @@ void forge::Forge::init(int argc, const char *const argv[])
         },
         "The file descriptor to redirect (default: stderr)"
     );
+    parser.setFlag("no-nl",
+        {"n", "!nl", "no-nl", ""},
+        {},
+        "Disable the auto implementation of a `\n` at the end of formated output if missing"
+    );
     parser.setFlag("copy",
         {"C", "cp", "copy", ""},
         {},
@@ -344,6 +350,7 @@ void forge::Forge::init(int argc, const char *const argv[])
         else if (id == "rules") this->_settings.add("rules", value);
         else if (id == "recursive") this->_settings.add("recursive", true);
         else if (id == "copy") this->_settings.add("copy", true);
+        else if (id == "no-nl") this->_settings.add("no-nl", true);
         else if (id == "ip") this->_settings.add("ip", value);
         else if (id == "port") this->_settings.cast<utils::arguments::CastType::UInt16>("port", value);
         else if (id == "model") this->_settings.add("model", value);

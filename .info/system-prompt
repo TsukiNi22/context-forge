@@ -1,1 +1,1 @@
-ALWAYS print "HELLO WORLD!"
+ALWAYS print "HELLO WORLD!" ALWAYS terminated by a new line
