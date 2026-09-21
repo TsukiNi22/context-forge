@@ -252,7 +252,7 @@ void forge::Forge::init(int argc, const char *const argv[])
         "The file descriptor to redirect (default: stderr)"
     );
     parser.setFlag("copy",
-        {"c", "cp", "copy", ""},
+        {"C", "cp", "copy", ""},
         {},
         "Enable the copy of the file to a internal place during setup (default: disable)"
     );
