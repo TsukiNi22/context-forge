@@ -16,7 +16,7 @@ add_compile_definitions(BACKWARD_COMPATIBILITY_WARNING) # To check internal usag
 # =========================
 # Requirement
 # =========================
-find_package(utils 2.13.18 CONFIG REQUIRED) # Check utils dependencies existance
+find_package(utils 2.13.21 CONFIG REQUIRED) # Check utils dependencies existance
 find_package(Python3 REQUIRED) # Used for the special dependencie
 find_package(httplib REQUIRED)
 find_package(PkgConfig REQUIRED)
