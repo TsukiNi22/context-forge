@@ -33,12 +33,6 @@ _nodiscard static std::optional<std::string> VerboseParsingHook(const std::strin
     return "Invalid verbose level, should be (none|basic|advanced|debug), but got: " + option;
 }
 
-_nodiscard static std::optional<std::string> ModeParsingHook(const std::string& option)
-{
-    if (option == "local" || option == "dist") return std::nullopt;
-    return "Invalid mode, should be (local|dist), but got: " + option;
-}
-
 _nodiscard static std::optional<std::string> FdParsingHook(const std::string& option)
 {
     int fd = 0;
@@ -54,12 +48,12 @@ void forge::Forge::init(int argc, const char *const argv[])
     utils::arguments::ArgParser parser = utils::arguments::ArgParser("context-forge", "A warpper to forge the output of many thing into what you really want!");
 
     // Setup the usages
-    parser.setUsage("context-forge_check",
+    parser.setUsage("context-forge_check-local",
         "check",
         false,
         {
             {"check", true},
-            {"mode", true},
+            {"mode-local", true},
             {"plugins", false},
             {"rules", false},
             {"recursive", false},
@@ -67,6 +61,20 @@ void forge::Forge::init(int argc, const char *const argv[])
             {"port", false},
             {"model", false},
             {"system-prompt", false},
+            {"verbose", false},
+        },
+        "Check the loading of rules & ollama"
+    );
+    
+    parser.setUsage("context-forge_check-dist",
+        "check",
+        false,
+        {
+            {"check", true},
+            {"mode-dist", true},
+            {"ip", false},
+            {"port", false},
+            {"model", false},
             {"verbose", false},
         },
         "Check the loading of rules & ollama"
@@ -185,10 +193,13 @@ void forge::Forge::init(int argc, const char *const argv[])
         "check",
         "Switch to the check mode"
     );
-    parser.setOption("mode",
-        "mode",
-        ModeParsingHook,
-        "Select the mode to use for the check"
+    parser.setOption("mode-local",
+        "local",
+        "Select the mode to local for the check"
+    );
+    parser.setOption("mode-dist",
+        "dist",
+        "Select the mode to dist for the check"
     );
     parser.setOption("setup",
         "setup",
@@ -301,7 +312,7 @@ void forge::Forge::init(int argc, const char *const argv[])
     parser.setFlag("model",
         {"m", "model", "model", "CONTEXT_FORGE_MODEL"},
         {
-            {"path", true, utils::arguments::defaultTrueParsingHook}
+            {"model", true, utils::arguments::defaultTrueParsingHook}
         },
         "Model that will be used by ollama"
     );
@@ -319,7 +330,7 @@ void forge::Forge::init(int argc, const char *const argv[])
         const std::string& value = (options.empty() ? "" : options.front());
         if (type) {
             if (id == "model-name") this->_settings.add("model", value);
-            else if (id == "mode") this->_settings.add("check-mode", value);
+            else if (id == "mode-local" || id == "mode-dist") this->_settings.add("check-mode", value);
             else this->_settings.add("mode", value); // detect mode from first options
         } else if (id == "verbose") {
             this->_settings.add("verbose", value);

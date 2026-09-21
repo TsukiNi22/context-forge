@@ -169,9 +169,9 @@ void forge::Forge::setup(void)
         if (copy) {
             if (!std::filesystem::is_regular_file(path)) throw utils::exception::ErrorException(utils::exception::InternalCode::Process, "System-prompt must be a single regular file");
             const std::filesystem::path dst = expand_home(INTERNAL_SYSTEM_PROMPT);
-            std::filesystem::create_directories(dst);
-            std::filesystem::copy_file(path, dst / path.filename(), std::filesystem::copy_options::overwrite_existing);
-            path = dst / path.filename();
+            std::filesystem::create_directories(dst.parent_path());
+            std::filesystem::copy_file(path, dst, std::filesystem::copy_options::overwrite_existing);
+            path = dst;
         }
         service_content << " --system-prompt " << path.string();
     }

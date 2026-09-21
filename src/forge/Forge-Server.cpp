@@ -33,6 +33,14 @@ File Description:
 #include <vector>
 #include <string>
 
+_nodiscard static std::filesystem::path expand_home(const std::string& path)
+{
+    if (path.rfind("~/", 0) != 0) return path;
+    const char* home = std::getenv("HOME");
+    if (!home) throw utils::exception::ErrorException(utils::exception::InternalCode::Process, "HOME is not set, can't expand '~' to clone files");
+    return std::filesystem::path(home) / path.substr(2);
+}
+
 _hidden _nodiscard static inline std::vector<std::byte> stringToBytes(const std::string& str)
 {
     std::vector<std::byte> bytes(str.size());
@@ -42,6 +50,13 @@ _hidden _nodiscard static inline std::vector<std::byte> stringToBytes(const std:
 
 void forge::Forge::server(void)
 {
+    // (only on check+dist) special rebuild of the arg to handle dist/cloned files (check+local is only with given files as raw)
+    if ((std::string)this->_settings.at("mode") == "check" && (std::string)this->_settings.at("check-mode") == "dist") {
+        this->_settings.set("plugins", expand_home(INTERNAL_PLUGINS).string());
+        this->_settings.set("rules", expand_home(INTERNAL_RULES).string());
+        this->_settings.set("system-prompt", expand_home(INTERNAL_SYSTEM_PROMPT).string());
+    }
+
     onAdvancedVerbose("load ressources (rules, system-prompt, ect)...");
     this->load();
 
