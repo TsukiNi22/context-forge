@@ -11,44 +11,46 @@ Edition:
 ##  @date 22/09/2026 by @author Tsukini
 
 File Name:
-##  @file IPreRule.hpp
+##  @file DefaultTrigger.hpp
 
 File Description:
 ##  You know, I don t think there are good or bad descriptions,
 ##  for me, life is all about functions...
 \**************************************************************/
 
-#ifndef IPRERULE_H
-    #define IPRERULE_H
+#ifndef DEFAULTTRIGGER_H
+    #define DEFAULTTRIGGER_H
 
     //----------------------------------------------------------------//
     /* INCLUDE */
 
     /* type */
-    #include "../AInstruction.hpp"  // forge::rules::AInstruction
-    #include <string>               // std::string
+    #include "ITrigger.hpp"     // forge::rules::ITrigger
+    #include <libconfig.h++>    // libconfig::Setting
+    #include <string>           // std::string
 
 namespace forge::rules { // namespace start
 //----------------------------------------------------------------//
 /* CLASS */
 
-class IPreRule: public forge::rules::AInstruction {
+class DefaultTrigger: public forge::rules::ITrigger {
     public:
         // ---------- Pre-Function -------- //
-        virtual void format(const std::string& bin, std::string& content) = 0;
+        void load(const libconfig::Setting& s) final;
+        bool trigger(const std::string& bin, const std::string& content) final;
 
         // ------------ Operator ---------- //
-        IPreRule& operator=(const IPreRule& other) = delete;
-        IPreRule& operator=(IPreRule&& other) = delete;
+        DefaultTrigger& operator=(const DefaultTrigger& other) = delete;
+        DefaultTrigger& operator=(DefaultTrigger&& other) = delete;
 
         // ---------- Constructor --------- //
-        IPreRule() = default;
-        IPreRule(const IPreRule& other) = delete;
-        IPreRule(IPreRule&& other) = delete;
+        DefaultTrigger() = default;
+        DefaultTrigger(const DefaultTrigger& other) = delete;
+        DefaultTrigger(DefaultTrigger&& other) = delete;
 
         // ----------- Destructor --------- //
-        virtual ~IPreRule() = default;
+        virtual ~DefaultTrigger() = default;
 };
 
 } // namespace end
-#endif /* IPRERULE_H */
+#endif /* DEFAULTTRIGGER_H */

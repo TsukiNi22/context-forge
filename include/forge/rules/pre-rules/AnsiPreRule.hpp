@@ -11,44 +11,46 @@ Edition:
 ##  @date 22/09/2026 by @author Tsukini
 
 File Name:
-##  @file IPreRule.hpp
+##  @file AnsiPreRule.hpp
 
 File Description:
 ##  You know, I don t think there are good or bad descriptions,
 ##  for me, life is all about functions...
 \**************************************************************/
 
-#ifndef IPRERULE_H
-    #define IPRERULE_H
+#ifndef ANSIPRERULE_H
+    #define ANSIPRERULE_H
 
     //----------------------------------------------------------------//
     /* INCLUDE */
 
     /* type */
-    #include "../AInstruction.hpp"  // forge::rules::AInstruction
-    #include <string>               // std::string
+    #include "IPreRule.hpp"     // forge::rules::IPreRule
+    #include <libconfig.h++>    // libconfig::Setting
+    #include <string>           // std::string
 
 namespace forge::rules { // namespace start
 //----------------------------------------------------------------//
 /* CLASS */
 
-class IPreRule: public forge::rules::AInstruction {
+class AnsiPreRule: public forge::rules::IPreRule {
     public:
         // ---------- Pre-Function -------- //
-        virtual void format(const std::string& bin, std::string& content) = 0;
+        void load(const libconfig::Setting& s) final;
+        void format(const std::string& bin, std::string& content) final;
 
         // ------------ Operator ---------- //
-        IPreRule& operator=(const IPreRule& other) = delete;
-        IPreRule& operator=(IPreRule&& other) = delete;
+        AnsiPreRule& operator=(const AnsiPreRule& other) = delete;
+        AnsiPreRule& operator=(AnsiPreRule&& other) = delete;
 
         // ---------- Constructor --------- //
-        IPreRule() = default;
-        IPreRule(const IPreRule& other) = delete;
-        IPreRule(IPreRule&& other) = delete;
+        AnsiPreRule() = default;
+        AnsiPreRule(const AnsiPreRule& other) = delete;
+        AnsiPreRule(AnsiPreRule&& other) = delete;
 
         // ----------- Destructor --------- //
-        virtual ~IPreRule() = default;
+        virtual ~AnsiPreRule() = default;
 };
 
 } // namespace end
-#endif /* IPRERULE_H */
+#endif /* ANSIPRERULE_H */

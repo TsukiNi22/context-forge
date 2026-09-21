@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 20/09/2026 by @author Tsukini
+##  @date 22/09/2026 by @author Tsukini
 
 File Name:
 ##  @file IInstruction.hpp
@@ -37,8 +37,8 @@ namespace forge::rules { // namespace start
 class IInstruction: private utils::security::observer::Observer<"IInstruction"> {
     public:
         // ---------- Pre-Function -------- //
-        virtual std::string name(void) const; // used only for debug purpose on server side
-        virtual void load(const libconfig::Setting& s);
+        virtual std::string name(void) const = 0; // used only for debug purpose on server side
+        virtual void load(const libconfig::Setting& s) = 0;
 
         // ------------ Operator ---------- //
         IInstruction& operator=(const IInstruction& other) = delete;

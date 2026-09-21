@@ -65,6 +65,74 @@ set(SRC
 add_executable(${TARGET} ${SRC})
 
 # =========================
+# Plugins
+# =========================
+set(SRC_PLUGINS
+    # Nothings...
+)
+
+set(SRC_TRIGGERS
+    src/forge/rules/triggers/lib.cpp
+)
+
+set(SRC_PRE_RULES
+    src/forge/rules/pre-rules/lib.cpp
+)
+
+set(SRC_RULES
+    src/forge/rules/rules/lib.cpp
+)
+
+set(SRC_DEFAULT
+    src/forge/rules/triggers/default/plugin.cpp
+    src/forge/rules/triggers/default/lib.cpp
+)
+add_library(trigger_default SHARED ${SRC_PLUGINS} ${SRC_TRIGGERS} ${SRC_DEFAULT})
+
+set(SRC_ANSI
+    src/forge/rules/pre-rules/ansi/plugin.cpp
+    src/forge/rules/pre-rules/ansi/lib.cpp
+)
+add_library(pre-rule_ansi SHARED ${SRC_PLUGINS} ${SRC_PRE_RULES} ${SRC_ANSI})
+
+set(SRC_LN
+    src/forge/rules/rules/ln/plugin.cpp
+    src/forge/rules/rules/ln/lib.cpp
+)
+add_library(rule_ln SHARED ${SRC_PLUGINS} ${SRC_RULES} ${SRC_LN})
+
+# =========================
+# Compilation parameters
+# =========================
+
+set_target_properties(
+    trigger_default
+    PROPERTIES
+        PREFIX ""
+        LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/plugins/triggers
+)
+
+set_target_properties(
+    pre-rule_ansi
+    PROPERTIES
+        PREFIX ""
+        LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/plugins/pre-rules
+)
+
+set_target_properties(
+    rule_ln
+    PROPERTIES
+        PREFIX ""
+        LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/plugins/rules
+)
+
+set(PLUGINS
+    trigger_default
+    pre-rule_ansi
+    rule_ln
+)
+
+# =========================
 # Special Targets
 # =========================
 file(GLOB_RECURSE EXCEPTION_CONFIG_FILES
@@ -86,6 +154,9 @@ add_custom_target(generated_external_exception_header
     DEPENDS ${GENERATED_EXCEPTION_HEADER}
 )
 
+add_custom_target(plugins)
+add_dependencies(plugins ${PLUGINS})
+
 # =========================
 # Release (build Optimized)
 # =========================
@@ -102,6 +173,11 @@ add_custom_target(release
 target_include_directories(${TARGET} PRIVATE include include/exception)
 target_link_libraries(${TARGET} PRIVATE PkgConfig::LIBCONFIGXX httplib::httplib utils::utils)
 add_dependencies(${TARGET} generated_external_exception_header)
+foreach(target ${PLUGINS})
+    target_include_directories(${target} PRIVATE include include/exception)
+    target_link_libraries(${target} PRIVATE PkgConfig::LIBCONFIGXX httplib::httplib utils::utils)
+    add_dependencies(${target} generated_external_exception_header)
+endforeach()
 
 # =========================
 # Modes
@@ -114,6 +190,16 @@ target_compile_options(${TARGET} PRIVATE
 target_link_options(${TARGET} PRIVATE
     $<$<CONFIG:Asan>:-fsanitize=address>
 )
+foreach(target ${PLUGINS})
+    target_compile_options(${target} PRIVATE
+        $<$<CONFIG:Debug>:-g -ggdb3>
+        $<$<CONFIG:Asan>:-fsanitize=address -fno-omit-frame-pointer -g -ggdb3>
+        $<$<CONFIG:Optimized>:-O3 -ffast-math -march=native -funroll-loops -pipe -DNDEBUG>
+    )
+    target_link_options(${target} PRIVATE
+        $<$<CONFIG:Asan>:-fsanitize=address>
+    )
+endforeach()
 
 # =========================
 # Installation (no cmake package handling setup)

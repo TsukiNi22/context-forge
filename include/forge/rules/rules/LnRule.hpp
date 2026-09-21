@@ -11,44 +11,46 @@ Edition:
 ##  @date 22/09/2026 by @author Tsukini
 
 File Name:
-##  @file IPreRule.hpp
+##  @file LnRule.hpp
 
 File Description:
 ##  You know, I don t think there are good or bad descriptions,
 ##  for me, life is all about functions...
 \**************************************************************/
 
-#ifndef IPRERULE_H
-    #define IPRERULE_H
+#ifndef LNRULE_H
+    #define LNRULE_H
 
     //----------------------------------------------------------------//
     /* INCLUDE */
 
     /* type */
-    #include "../AInstruction.hpp"  // forge::rules::AInstruction
-    #include <string>               // std::string
+    #include "IRule.hpp"     // forge::rules::IRule
+    #include <libconfig.h++>    // libconfig::Setting
+    #include <string>           // std::string
 
 namespace forge::rules { // namespace start
 //----------------------------------------------------------------//
 /* CLASS */
 
-class IPreRule: public forge::rules::AInstruction {
+class LnRule: public forge::rules::IRule {
     public:
-        // ---------- Pre-Function -------- //
-        virtual void format(const std::string& bin, std::string& content) = 0;
+        // ---------- -Function -------- //
+        void load(const libconfig::Setting& s) final;
+        void format(const std::string& bin, std::string& content) final;
 
         // ------------ Operator ---------- //
-        IPreRule& operator=(const IPreRule& other) = delete;
-        IPreRule& operator=(IPreRule&& other) = delete;
+        LnRule& operator=(const LnRule& other) = delete;
+        LnRule& operator=(LnRule&& other) = delete;
 
         // ---------- Constructor --------- //
-        IPreRule() = default;
-        IPreRule(const IPreRule& other) = delete;
-        IPreRule(IPreRule&& other) = delete;
+        LnRule() = default;
+        LnRule(const LnRule& other) = delete;
+        LnRule(LnRule&& other) = delete;
 
         // ----------- Destructor --------- //
-        virtual ~IPreRule() = default;
+        virtual ~LnRule() = default;
 };
 
 } // namespace end
-#endif /* IPRERULE_H */
+#endif /* LNRULE_H */

@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 20/09/2026 by @author Tsukini
+##  @date 22/09/2026 by @author Tsukini
 
 File Name:
 ##  @file IRule.hpp
@@ -35,7 +35,7 @@ namespace forge::rules { // namespace start
 class IRule: public forge::rules::AInstruction {
     public:
         // ---------- -Function -------- //
-        virtual void format(const std::string& bin, std::string& content);
+        virtual void format(const std::string& bin, std::string& content) = 0;
 
         // ------------ Operator ---------- //
         IRule& operator=(const IRule& other) = delete;
