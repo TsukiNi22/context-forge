@@ -49,7 +49,7 @@ class LnRule: public forge::rules::IRule {
         LnRule& operator=(LnRule&& other) = delete;
 
         // ---------- Constructor --------- //
-        LnRule() = default;
+        LnRule(): IRule("ln") {};
         LnRule(const LnRule& other) = delete;
         LnRule(LnRule&& other) = delete;
 

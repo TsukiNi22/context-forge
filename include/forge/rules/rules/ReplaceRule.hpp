@@ -51,7 +51,7 @@ class ReplaceRule: public forge::rules::IRule {
         ReplaceRule& operator=(ReplaceRule&& other) = delete;
 
         // ---------- Constructor --------- //
-        ReplaceRule() = default;
+        ReplaceRule(): IRule("replace") {};
         ReplaceRule(const ReplaceRule& other) = delete;
         ReplaceRule(ReplaceRule&& other) = delete;
 

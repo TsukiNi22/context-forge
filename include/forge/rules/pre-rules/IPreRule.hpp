@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 22/09/2026 by @author Tsukini
+##  @date 23/09/2026 by @author Tsukini
 
 File Name:
 ##  @file IPreRule.hpp
@@ -43,6 +43,7 @@ class IPreRule: public forge::rules::AInstruction {
 
         // ---------- Constructor --------- //
         IPreRule() = default;
+        IPreRule(const std::string& name): AInstruction(name) {};
         IPreRule(const IPreRule& other) = delete;
         IPreRule(IPreRule&& other) = delete;
 

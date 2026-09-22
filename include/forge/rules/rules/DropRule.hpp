@@ -49,7 +49,7 @@ class DropRule: public forge::rules::IRule {
         DropRule& operator=(DropRule&& other) = delete;
 
         // ---------- Constructor --------- //
-        DropRule() = default;
+        DropRule(): IRule("drop") {};
         DropRule(const DropRule& other) = delete;
         DropRule(DropRule&& other) = delete;
 

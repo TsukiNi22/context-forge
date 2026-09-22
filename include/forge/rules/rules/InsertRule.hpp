@@ -49,7 +49,7 @@ class InsertRule: public forge::rules::IRule {
         InsertRule& operator=(InsertRule&& other) = delete;
 
         // ---------- Constructor --------- //
-        InsertRule() = default;
+        InsertRule(): IRule("insert") {};
         InsertRule(const InsertRule& other) = delete;
         InsertRule(InsertRule&& other) = delete;
 

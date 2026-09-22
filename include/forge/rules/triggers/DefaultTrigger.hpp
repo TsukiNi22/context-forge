@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 22/09/2026 by @author Tsukini
+##  @date 23/09/2026 by @author Tsukini
 
 File Name:
 ##  @file DefaultTrigger.hpp
@@ -52,7 +52,7 @@ class DefaultTrigger: public forge::rules::ITrigger {
         DefaultTrigger& operator=(DefaultTrigger&& other) = delete;
 
         // ---------- Constructor --------- //
-        DefaultTrigger() = default;
+        DefaultTrigger(): ITrigger("trigger") {};
         DefaultTrigger(const DefaultTrigger& other) = delete;
         DefaultTrigger(DefaultTrigger&& other) = delete;
 

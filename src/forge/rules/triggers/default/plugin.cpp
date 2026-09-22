@@ -50,7 +50,7 @@ void forge::rules::DefaultTrigger::load(const libconfig::Setting& s)
     if (s.exists("contains")) {
         // check type
         const libconfig::Setting& contains = s["contains"];
-        if (!contains.isArray()) _unlikely {
+        if (!contains.isString()) _unlikely {
             throw utils::exception::ErrorException(utils::exception::ExternalCode::Rules, s["contains"].getPath() + ": the contains value must be a string");
         }
 
@@ -62,7 +62,7 @@ void forge::rules::DefaultTrigger::load(const libconfig::Setting& s)
     if (s.exists("match")) {
         // check type
         const libconfig::Setting& match = s["match"];
-        if (!match.isArray()) _unlikely {
+        if (!match.isString()) _unlikely {
             throw utils::exception::ErrorException(utils::exception::ExternalCode::Rules, s["match"].getPath() + ": the match value must be a string");
         }
 
@@ -73,8 +73,9 @@ void forge::rules::DefaultTrigger::load(const libconfig::Setting& s)
 
 _hot _nodiscard bool forge::rules::DefaultTrigger::trigger(const std::string& bin, const std::string& content)
 {
-    return (this->_bin.empty() || std::find(this->_bin.begin(), this->_bin.end(), bin) != this->_bin.end())
-        && (!this->_contains || std::regex_search(content, *this->_contains))
-        && (!this->_match || std::regex_match(content, *this->_match))
+    return (!this->_bin.empty() && std::find(this->_bin.begin(), this->_bin.end(), bin) != this->_bin.end())
+        || (this->_contains && std::regex_search(content, *this->_contains))
+        || (this->_match && std::regex_match(content, *this->_match))
+        || (this->_bin.empty() && !this->_contains && !this->_match)
     ;
 }

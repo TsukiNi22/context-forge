@@ -34,15 +34,6 @@ set(SRC
     rules/AInstruction.cpp
     rules/Rules.cpp
 
-    # Rules (sub-part: triggers)
-    rules/triggers/DefaultTrigger.cpp
-
-    # Rules (sub-part: pre-rules)
-    rules/pre-rules/AnsiPreRule.cpp
-
-    # Rules (sub-part: rules)
-    rules/rules/LnRule.cpp
-
     # Plugins (shared object)
     plugins/Plugins.cpp
 )

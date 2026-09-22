@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 22/09/2026 by @author Tsukini
+##  @date 23/09/2026 by @author Tsukini
 
 File Name:
 ##  @file Forge-Client.cpp
@@ -124,7 +124,7 @@ void forge::Forge::exec(void)
     // Setup the fd redirection
     onAdvancedVerbose("setup redirection...");
     utils::encapsulation::Pipe pipe; pipe.trigger();
-    int redirectedFd = this->_settings.contains("redirect") ? (int)this->_settings.at("redirect") : STDIN_FILENO;
+    int redirectedFd = this->_settings.contains("redirect") ? (int)this->_settings.at("redirect") : STDOUT_FILENO;
 
     // Start the sub-process
     onAdvancedVerbose("----------------- [Execution] -----------------");

@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 22/09/2026 by @author Tsukini
+##  @date 23/09/2026 by @author Tsukini
 
 File Name:
 ##  @file AnsiPreRule.hpp
@@ -47,7 +47,7 @@ class AnsiPreRule: public forge::rules::IPreRule {
         AnsiPreRule& operator=(AnsiPreRule&& other) = delete;
 
         // ---------- Constructor --------- //
-        AnsiPreRule() = default;
+        AnsiPreRule(): IPreRule("ansi") {};
         AnsiPreRule(const AnsiPreRule& other) = delete;
         AnsiPreRule(AnsiPreRule&& other) = delete;
 

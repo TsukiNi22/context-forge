@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 22/09/2026 by @author Tsukini
+##  @date 23/09/2026 by @author Tsukini
 
 File Name:
 ##  @file ITrigger.hpp
@@ -43,6 +43,7 @@ class ITrigger: public forge::rules::AInstruction {
 
         // ---------- Constructor --------- //
         ITrigger() = default;
+        ITrigger(const std::string& name): AInstruction(name) {};
         ITrigger(const ITrigger& other) = delete;
         ITrigger(ITrigger&& other) = delete;
 

@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 21/09/2026 by @author Tsukini
+##  @date 23/09/2026 by @author Tsukini
 
 File Name:
 ##  @file Forge-Formating.cpp
@@ -32,7 +32,7 @@ void forge::Forge::formatCFG(const std::string& bin, std::string& input) const
     onDebugVerbose("----- [RULES] -----");
     for (const forge::rules::Rules& rules: this->_rules) {
         if (rules.trigger(bin, input)) {
-            onDebugVerbose("apply: " << rules.path());
+            onAdvancedVerbose("apply: " << rules.path());
             rules.apply(bin, input);
         }
     }

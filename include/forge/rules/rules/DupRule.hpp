@@ -52,7 +52,7 @@ class DupRule: public forge::rules::IRule {
         DupRule& operator=(DupRule&& other) = delete;
 
         // ---------- Constructor --------- //
-        DupRule() = default;
+        DupRule(): IRule("dup") {};
         DupRule(const DupRule& other) = delete;
         DupRule(DupRule&& other) = delete;
 

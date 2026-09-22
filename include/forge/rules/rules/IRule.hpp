@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 22/09/2026 by @author Tsukini
+##  @date 23/09/2026 by @author Tsukini
 
 File Name:
 ##  @file IRule.hpp
@@ -43,6 +43,7 @@ class IRule: public forge::rules::AInstruction {
 
         // ---------- Constructor --------- //
         IRule() = default;
+        IRule(const std::string& name): AInstruction(name) {};
         IRule(const IRule& other) = delete;
         IRule(IRule&& other) = delete;
 
