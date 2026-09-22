@@ -107,6 +107,30 @@ set(SRC_LN
 )
 add_library(rule_ln SHARED ${SRC_PLUGINS} ${SRC_RULES} ${SRC_LN})
 
+set(SRC_DROP
+    src/forge/rules/rules/drop/plugin.cpp
+    src/forge/rules/rules/drop/lib.cpp
+)
+add_library(rule_drop SHARED ${SRC_PLUGINS} ${SRC_RULES} ${SRC_DROP})
+
+set(SRC_DUP
+    src/forge/rules/rules/dup/plugin.cpp
+    src/forge/rules/rules/dup/lib.cpp
+)
+add_library(rule_dup SHARED ${SRC_PLUGINS} ${SRC_RULES} ${SRC_DUP})
+
+set(SRC_INSERT
+    src/forge/rules/rules/insert/plugin.cpp
+    src/forge/rules/rules/insert/lib.cpp
+)
+add_library(rule_insert SHARED ${SRC_PLUGINS} ${SRC_RULES} ${SRC_INSERT})
+
+set(SRC_REPLACE
+    src/forge/rules/rules/replace/plugin.cpp
+    src/forge/rules/rules/replace/lib.cpp
+)
+add_library(rule_replace SHARED ${SRC_PLUGINS} ${SRC_RULES} ${SRC_REPLACE})
+
 # =========================
 # Compilation parameters
 # =========================
@@ -127,6 +151,10 @@ set_target_properties(
 
 set_target_properties(
     rule_ln
+    rule_drop
+    rule_dup
+    rule_insert
+    rule_replace
     PROPERTIES
         PREFIX ""
         LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/plugins/rules
@@ -136,6 +164,10 @@ set(PLUGINS
     trigger_default
     pre-rule_ansi
     rule_ln
+    rule_drop
+    rule_dup
+    rule_insert
+    rule_replace
 )
 
 # =========================

@@ -8,57 +8,57 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 22/09/2026 by @author Tsukini
+##  @date 23/09/2026 by @author Tsukini
 
 File Name:
-##  @file DefaultTrigger.hpp
+##  @file DupRule.hpp
 
 File Description:
 ##  You know, I don t think there are good or bad descriptions,
 ##  for me, life is all about functions...
 \**************************************************************/
 
-#ifndef DEFAULTTRIGGER_H
-    #define DEFAULTTRIGGER_H
+#ifndef DUPRULE_H
+    #define DUPRULE_H
 
     //----------------------------------------------------------------//
     /* INCLUDE */
 
     /* type */
-    #include "ITrigger.hpp"     // forge::rules::ITrigger
+    #include "IRule.hpp"        // forge::rules::IRule
     #include <libconfig.h++>    // libconfig::Setting
-    #include <optional>         // std::optional
-    #include <vector>           // std::vector
-    #include <string>           // std::string
     #include <regex>            // std::regex
+    #include <string>           // std::string
+    #include <vector>           // std::vector
 
 namespace forge::rules { // namespace start
 //----------------------------------------------------------------//
 /* CLASS */
 
-class DefaultTrigger: public forge::rules::ITrigger {
+class DupRule: public forge::rules::IRule {
     private:
-        std::vector<std::string> _bin;
-        std::optional<std::regex> _contains;
-        std::optional<std::regex> _match;
+        std::vector<std::regex> _match;
+        std::vector<std::string> _eq;
+        int _keep = 1;
+        bool _invert = false;
 
     public:
-        // ---------- Pre-Function -------- //
+        // ---------- -Function -------- //
         void load(const libconfig::Setting& s) final;
-        bool trigger(const std::string& bin, const std::string& content) final;
+        void format(const std::string& bin, std::string& content) final;
 
         // ------------ Operator ---------- //
-        DefaultTrigger& operator=(const DefaultTrigger& other) = delete;
-        DefaultTrigger& operator=(DefaultTrigger&& other) = delete;
+        DupRule& operator=(const DupRule& other) = delete;
+        DupRule& operator=(DupRule&& other) = delete;
 
         // ---------- Constructor --------- //
-        DefaultTrigger() = default;
-        DefaultTrigger(const DefaultTrigger& other) = delete;
-        DefaultTrigger(DefaultTrigger&& other) = delete;
+        DupRule() = default;
+        DupRule(const DupRule& other) = delete;
+        DupRule(DupRule&& other) = delete;
 
         // ----------- Destructor --------- //
-        virtual ~DefaultTrigger() = default;
+        ~DupRule() = default;
 };
 
 } // namespace end
-#endif /* DEFAULTTRIGGER_H */
+#endif /* DUPRULE_H */

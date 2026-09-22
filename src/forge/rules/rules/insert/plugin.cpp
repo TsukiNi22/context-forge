@@ -11,51 +11,41 @@ Edition:
 ##  @date 23/09/2026 by @author Tsukini
 
 File Name:
-##  @file LnRule.hpp
+##  @file plugin.cpp
 
 File Description:
 ##  You know, I don t think there are good or bad descriptions,
 ##  for me, life is all about functions...
 \**************************************************************/
 
-#ifndef LNRULE_H
-    #define LNRULE_H
+#define _Exception
+#define _Attribute
+#include <utils/utils.hpp>
+#include "forge/rules/rules/InsertRule.hpp"
+#include <libconfig.h++>
+#include <string>
 
-    //----------------------------------------------------------------//
-    /* INCLUDE */
+void forge::rules::InsertRule::load(const libconfig::Setting& s)
+{
+    // before
+    if (s.exists("before")) {
+        if (s["before"].getType() != libconfig::Setting::TypeString) _unlikely {
+            throw utils::exception::ErrorException(utils::exception::ExternalCode::Rules, s["before"].getPath() + ": the before value must be a string");
+        }
+        this->_before = static_cast<const char*>(s["before"]);
+    }
 
-    /* type */
-    #include "IRule.hpp"        // forge::rules::IRule
-    #include <libconfig.h++>    // libconfig::Setting
-    #include <optional>         // std::optional
-    #include <string>           // std::string
+    // after
+    if (s.exists("after")) {
+        if (s["after"].getType() != libconfig::Setting::TypeString) _unlikely {
+            throw utils::exception::ErrorException(utils::exception::ExternalCode::Rules, s["after"].getPath() + ": the after value must be a string");
+        }
+        this->_after = static_cast<const char*>(s["after"]);
+    }
+}
 
-namespace forge::rules { // namespace start
-//----------------------------------------------------------------//
-/* CLASS */
-
-class LnRule: public forge::rules::IRule {
-    private:
-        std::optional<int> _head;
-        std::optional<int> _tail;
-
-    public:
-        // ---------- -Function -------- //
-        void load(const libconfig::Setting& s) final;
-        void format(const std::string& bin, std::string& content) final;
-
-        // ------------ Operator ---------- //
-        LnRule& operator=(const LnRule& other) = delete;
-        LnRule& operator=(LnRule&& other) = delete;
-
-        // ---------- Constructor --------- //
-        LnRule() = default;
-        LnRule(const LnRule& other) = delete;
-        LnRule(LnRule&& other) = delete;
-
-        // ----------- Destructor --------- //
-        ~LnRule() = default;
-};
-
-} // namespace end
-#endif /* LNRULE_H */
+_hot void forge::rules::InsertRule::format(_unused const std::string& bin, std::string& content)
+{
+    if (this->_before) content = *this->_before + content;
+    if (this->_after) content += *this->_after;
+}

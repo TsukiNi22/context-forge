@@ -21,9 +21,9 @@ File Description:
 #define _Exception
 #define _Attribute
 #include <utils/utils.hpp>
-#include "forge/rules/rules/LnRule.hpp"
+#include "forge/rules/rules/DropRule.hpp"
 #include <libconfig.h++>
-#include <algorithm>
+#include <regex>
 #include <string>
 #include <vector>
 
@@ -56,59 +56,46 @@ _hot _nodiscard static std::string joinLines(const std::vector<std::string>& lin
     return result;
 }
 
-void forge::rules::LnRule::load(const libconfig::Setting& s)
+void forge::rules::DropRule::load(const libconfig::Setting& s)
 {
-    // head
-    if (s.exists("head")) {
-        if (s["head"].getType() != libconfig::Setting::TypeInt) _unlikely {
-            throw utils::exception::ErrorException(utils::exception::ExternalCode::Rules, s["head"].getPath() + ": the head value must be an integer");
-        }
-        this->_head = static_cast<int>(s["head"]);
+    // check type
+    if (!s.isArray()) _unlikely {
+        throw utils::exception::ErrorException(utils::exception::ExternalCode::Rules, s.getPath() + ": the drop value must be an array of string [\"...\", ...]");
     }
 
-    // tail
-    if (s.exists("tail")) {
-        if (s["tail"].getType() != libconfig::Setting::TypeInt) _unlikely {
-            throw utils::exception::ErrorException(utils::exception::ExternalCode::Rules, s["tail"].getPath() + ": the tail value must be an integer");
+    // extract values
+    for (int i = 0; i < s.getLength(); ++i) {
+        if (!s[i].isString()) _unlikely {
+            throw utils::exception::ErrorException(utils::exception::ExternalCode::Rules, s.getPath() + ": the drop values must be only composed of string [\"...\", ...]");
         }
-        this->_tail = static_cast<int>(s["tail"]);
+        this->_pattern.emplace_back(static_cast<const char*>(s[i]));
     }
 }
 
-_hot void forge::rules::LnRule::format(_unused const std::string& bin, std::string& content)
+_hot void forge::rules::DropRule::format(_unused const std::string& bin, std::string& content)
 {
-    if (!this->_head && !this->_tail) return;
+    if (this->_pattern.empty()) return;
 
     // init vars
     std::vector<std::string> lines = splitLines(content);
+    std::vector<std::string> result;
+    result.reserve(lines.size());
 
-    // head: pos -> keep first n lines | neg -> remove first |n| lines
-    if (this->_head) {
-        int head = *this->_head;
+    // drop any line matching at least one pattern
+    for (const std::string& line : lines) {
+        bool drop = false;
 
-        if (head >= 0) {
-            if (static_cast<std::size_t>(head) < lines.size())
-                lines.resize(static_cast<std::size_t>(head));
-        } else {
-            std::size_t drop = std::min(lines.size(), static_cast<std::size_t>(-head));
-            lines.erase(lines.begin(), lines.begin() + static_cast<long>(drop));
+        for (const std::regex& pattern : this->_pattern) {
+            if (std::regex_search(line, pattern)) {
+                drop = true;
+                break;
+            }
         }
-    }
 
-    // tail: pos -> keep last n lines | neg -> remove last |n| lines
-    if (this->_tail) {
-        int tail = *this->_tail;
-
-        if (tail >= 0) {
-            std::size_t keep = static_cast<std::size_t>(tail);
-            if (keep < lines.size())
-                lines.erase(lines.begin(), lines.end() - static_cast<long>(keep));
-        } else {
-            std::size_t drop = std::min(lines.size(), static_cast<std::size_t>(-tail));
-            lines.resize(lines.size() - drop);
-        }
+        if (!drop)
+            result.push_back(line);
     }
 
     // store the result
-    content = joinLines(lines);
+    content = joinLines(result);
 }

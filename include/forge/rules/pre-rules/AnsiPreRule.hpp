@@ -34,6 +34,9 @@ namespace forge::rules { // namespace start
 /* CLASS */
 
 class AnsiPreRule: public forge::rules::IPreRule {
+    private:
+        bool _enable = true;
+
     public:
         // ---------- Pre-Function -------- //
         void load(const libconfig::Setting& s) final;

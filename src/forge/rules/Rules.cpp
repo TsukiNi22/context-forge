@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 21/09/2026 by @author Tsukini
+##  @date 22/09/2026 by @author Tsukini
 
 File Name:
 ##  @file Rules.cpp
@@ -34,7 +34,7 @@ _cold void forge::rules::Rules::loadBlock(const libconfig::Setting& s)
 
     // ln & char
     if (s.exists("ln") && s.exists("char")) _unlikely {
-        throw utils::exception::ErrorException(utils::exception::ExternalCode::Rules, "Tshe hard-coded plugin 'block' doesn't allow ln & char value at the same time");
+        throw utils::exception::ErrorException(utils::exception::ExternalCode::Rules, "The hard-coded plugin 'block' doesn't allow ln & char value at the same time");
     }
 
     // ln
