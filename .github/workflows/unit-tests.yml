@@ -17,7 +17,7 @@ jobs:
       - name: Install dependencies
         run: |
           apt-get update
-          apt-get install -y libcpp-httplib-dev libconfig++-dev
+          apt-get install -y libcpp-httplib-dev libconfig++-dev nlohmann-json3-dev
 
       - name: Checkout repository
         uses: actions/checkout@v5
