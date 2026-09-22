@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 20/09/2026 by @author Tsukini
+##  @date 22/09/2026 by @author Tsukini
 
 File Name:
 ##  @file Forge-Formating.cpp
@@ -180,7 +180,7 @@ void forge::Forge::loadCFG(const std::string& path)
 
     // Open & Read the rule file
     try {
-        cfg.readFile(path);
+        cfg.readFile(path.c_str());
     } catch (const libconfig::FileIOException& e) {
         throw utils::exception::ErrorException(utils::exception::ExternalCode::Rules, "I/O error while reading file");
     } catch (const libconfig::ParseException& e) {
