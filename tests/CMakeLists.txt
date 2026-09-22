@@ -33,9 +33,6 @@ set(SRC
     # Rules
     rules/AInstruction.cpp
     rules/Rules.cpp
-
-    # Plugins (shared object)
-    plugins/Plugins.cpp
 )
 add_executable(${TARGET} ${SRC} ${SRC_FORGE} ${SRC_FORGE_PLUGINS})
 
