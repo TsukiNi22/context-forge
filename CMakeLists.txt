@@ -3,6 +3,12 @@ set(TARGET context-forge)
 project(${TARGET} VERSION 1.0.0 LANGUAGES CXX)
 
 # =========================
+# Options
+# =========================
+option(CONTEXT_FORGE_STABLE_RELEASE "Channel as stable release" OFF)
+option(BUILD_TESTS "Build unit tests" OFF)
+
+# =========================
 # Compilateur & Standard
 # =========================
 set(CMAKE_CXX_STANDARD 20)
@@ -135,6 +141,11 @@ set(PLUGINS
 # =========================
 # Special Targets
 # =========================
+if(BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
+
 file(GLOB_RECURSE EXCEPTION_CONFIG_FILES
     CONFIGURE_DEPENDS
     "${CMAKE_SOURCE_DIR}/cmake/config/exceptions/*.json"
@@ -164,6 +175,12 @@ add_custom_target(release
     COMMAND ${CMAKE_COMMAND} -S ${CMAKE_SOURCE_DIR} -B ${CMAKE_BINARY_DIR} -DCMAKE_BUILD_TYPE=Optimized
     COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --parallel
     COMMENT "Release version: Optimized"
+    VERBATIM
+)
+add_custom_target(package_release
+    COMMAND ${CMAKE_COMMAND} -S ${CMAKE_SOURCE_DIR} -B ${CMAKE_BINARY_DIR} -DCMAKE_BUILD_TYPE=Optimized
+    COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target package --parallel
+    COMMENT "Building plackage release version"
     VERBATIM
 )
 
@@ -202,14 +219,14 @@ foreach(target ${PLUGINS})
 endforeach()
 
 # =========================
-# Installation (no cmake package handling setup)
+# Installation
 # =========================
 include(GNUInstallDirs) # load variable used for installation
 
 # Binary
 install(TARGETS ${TARGET}
     EXPORT ${TARGET}Targets
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT bin
 )
 
 # =========================
@@ -219,3 +236,74 @@ add_custom_target(get_unregistered_files
     COMMAND bash ${CMAKE_SOURCE_DIR}/cmake/scripts/check_files.sh unregistered ${SRC}
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
+
+# =========================
+# Package Building
+# =========================
+set(CPACK_PACKAGE_VENDOR "TsukiNi22")
+set(CPACK_PACKAGE_CONTACT "xartania.contact@gmail.com")
+set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
+
+set(CPACK_GENERATOR "RPM;DEB")
+
+# Setup the channel name
+if(CONTEXT_FORGE_STABLE_RELEASE)
+    set(CHANNEL "")
+    set(MIRROR_CHANNEL "-pre")
+else()
+    set(CHANNEL "-pre")
+    set(MIRROR_CHANNEL "")
+endif()
+
+# Setup the package name
+set(CPACK_PACKAGE_NAME "context-forge${CHANNEL}")
+set(MIRROR_PACKAGE_NAME "context-forge${MIRROR_CHANNEL}")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "C++20 wrapper to format command output")
+
+# Setup the conflict between stable & unstable packages
+if(CONTEXT_FORGE_STABLE_RELEASE)
+    # If a recent stable version exist the context-forge-*-pre installation will result in the stable version
+    set(CPACK_RPM_PACKAGE_OBSOLETES "${MIRROR_PACKAGE_NAME} <= ${PROJECT_VERSION}")
+    set(CPACK_DEBIAN_PACKAGE_REPLACES "${MIRROR_PACKAGE_NAME} (<= ${PROJECT_VERSION})")
+endif()
+
+set(CPACK_RPM_PACKAGE_CONFLICTS "${MIRROR_PACKAGE_NAME}")
+set(CPACK_DEBIAN_PACKAGE_BREAKS "${MIRROR_PACKAGE_NAME}")
+set(CPACK_DEBIAN_PACKAGE_CONFLICTS "${MIRROR_PACKAGE_NAME}")
+
+# Separate headers & lib
+set(CPACK_RPM_COMPONENT_INSTALL ON)
+set(CPACK_DEB_COMPONENT_INSTALL ON)
+set(CPACK_COMPONENTS_ALL "")
+set(CPACK_COMPONENT_INCLUDE_TOPLEVEL_DIRECTORY OFF) # In case~
+
+# Edit release value (run count)
+if(CONTEXT_FORGE_STABLE_RELEASE)
+    # A stable version should never have to be rebuild and should always be removed or marked as depreacted
+    set(CPACK_RPM_PACKAGE_RELEASE "1")
+    set(CPACK_DEBIAN_PACKAGE_RELEASE "1")
+elseif(DEFINED PACKAGE_RELEASE)
+    set(CPACK_RPM_PACKAGE_RELEASE "${PACKAGE_RELEASE}")
+    set(CPACK_DEBIAN_PACKAGE_RELEASE "${PACKAGE_RELEASE}")
+else() # 0 is impossible for github.run_number
+    set(CPACK_RPM_PACKAGE_RELEASE "0")
+    set(CPACK_DEBIAN_PACKAGE_RELEASE "0")
+endif()
+
+# Dependencies
+set(CPACK_RPM_PACKAGE_REQUIRES "")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "")
+
+# RPM
+set(CPACK_RPM_PACKAGE_LICENSE "MIT")
+set(CPACK_RPM_LIB_PACKAGE_NAME ${CPACK_PACKAGE_NAME})
+set(CPACK_RPM_HEADERS_PACKAGE_NAME ${CPACK_PACKAGE_NAME})
+
+# Debian
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "TsukiNi22")
+set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://github.com/TsukiNi22/context-forge")
+set(CPACK_DEBIAN_LIB_PACKAGE_NAME ${CPACK_PACKAGE_NAME})
+set(CPACK_DEBIAN_HEADERS_PACKAGE_NAME ${CPACK_PACKAGE_NAME})
+
+include(CPack)

@@ -1,8 +1,7 @@
-name: CI - Executables
+name: Build - Executables (CI)
 
 on:
-  push:
-    branches: [main]
+  workflow_dispatch: # Triggered by Dispatch (CI/CD)
 
 env:
   EXECUTABLES: "context-forge"
