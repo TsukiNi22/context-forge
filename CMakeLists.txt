@@ -24,6 +24,7 @@ add_compile_definitions(BACKWARD_COMPATIBILITY_WARNING) # To check internal usag
 # =========================
 find_package(utils 2.13.22 CONFIG REQUIRED) # Check utils dependencies existance
 find_package(Python3 REQUIRED) # Used for the special dependencie
+#find_package(httplib REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBCONFIGXX REQUIRED IMPORTED_TARGET libconfig++)
 find_program(CCACHE_PROGRAM ccache) # Used for cache during compilation
