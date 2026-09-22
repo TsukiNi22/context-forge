@@ -15,9 +15,7 @@ jobs:
 
     steps:
       - name: Install dependencies
-        run: |
-          apt-get update
-          apt-get install -y libcpp-httplib-dev libconfig++-dev nlohmann-json3-dev
+        run: dnf install -y cpp-httplib-devel libconfig-devel json-devel
 
       - name: Checkout repository
         uses: actions/checkout@v5
