@@ -19,7 +19,7 @@ jobs:
 
     steps:
       - name: Install dependencies
-        run: sudo apt install libcpp-httplib-dev
+        run: apt install libcpp-httplib-dev
 
       - name: Checkout repository
         uses: actions/checkout@v5
