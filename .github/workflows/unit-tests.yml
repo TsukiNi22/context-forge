@@ -14,6 +14,9 @@ jobs:
       image: ghcr.io/tsukini22/unit-tests:latest
 
     steps:
+      - name: Install dependencies
+        run: sudo apt install libcpp-httplib-dev
+
       - name: Checkout repository
         uses: actions/checkout@v5
         with:

@@ -1,6 +1,4 @@
 plugins content
 
 auto completion on zsh
-readme + doc & test
-
-package rmp/deb
+readme + doc
