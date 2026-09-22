@@ -52,7 +52,7 @@ add_executable(${TARGET} ${SRC} ${SRC_FORGE} ${SRC_FORGE_PLUGINS})
 # Dependencies
 # =========================
 target_include_directories(${TARGET} PRIVATE ../include/ ../include/exception/ .)
-target_link_libraries(${TARGET} PRIVATE PkgConfig::LIBCONFIGXX utils::utils GTest::gtest GTest::gtest_main)
+target_link_libraries(${TARGET} PRIVATE PkgConfig::LIBCONFIGXX httplib::httplib utils::utils GTest::gtest GTest::gtest_main)
 add_dependencies(${TARGET} generated_external_exception_header plugins)
 
 # Path used by the tests to find the shared object built by the `plugins` target
