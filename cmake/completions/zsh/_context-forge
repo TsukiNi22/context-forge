@@ -1,0 +1,132 @@
+#compdef context-forge
+# Zsh completion for context-forge
+# Install: see instructions at the bottom of this file.
+
+_context_forge_verbose_levels() {
+    local levels=(none basic advanced debug)
+    _describe 'verbose level' levels
+}
+
+_context_forge_fd() {
+    local fds=(0 1 2)
+    _describe 'file descriptor' fds
+}
+
+# Flags shared by most subcommands
+_cf_common=(
+    '(-h -help --help)'{-h,-help,--help}'[Display help and exit]'
+    '(-v --verbose)'{-v,--verbose}'[Set the verbose level]:level:_context_forge_verbose_levels'
+)
+
+_cf_net=(
+    '(-a -ip --ip)'{-a,-ip,--ip}'[Ip used to connect to ollama]:ip:'
+    '(-p -port --port)'{-p,-port,--port}'[Port used to connect to ollama]:port:'
+)
+
+_cf_model=(
+    '(-m -model --model)'{-m,-model,--model}'[Model that will be used by ollama]:model:'
+)
+
+_cf_dist=(
+    '(-P -so --plugins)'{-P,-so,--plugins}'[Path of the plugins directory (<path>/*.so)]:directory:_files -/'
+    '(-r -rules --rules)'{-r,-rules,--rules}'[Path of the rules directory (<path>/*.cfg)]:directory:_files -/'
+    '(-R -rec --recursive)'{-R,-rec,--recursive}'[Enable recursive search for rules/plugins]'
+    '(-s --system-prompt)'{-s,--system-prompt}'[Path for the system-prompt used for the ollama model]:file:_files'
+)
+
+_context_forge() {
+    local -a commands
+    commands=(
+        'pull:Pull a model for ollama'
+        'install-ollama:Switch to the installation of ollama'
+        'remove:Switch to the remove mode'
+        'status:Display global status'
+        'restart:Restart the server'
+        'start:Start the server'
+        'exec:Switch to the client/execution mode'
+        'stop:Stop the server'
+        'setup:Switch to the setup mode'
+        'server:Switch to the server mode'
+        'check:Switch to the check mode'
+    )
+
+    local curcontext="$curcontext" state line
+    typeset -A opt_args
+
+    _arguments -C \
+        '1: :->command' \
+        '*::arg:->args'
+
+    case $state in
+        command)
+            _describe 'command' commands
+            ;;
+        args)
+            case ${line[1]} in
+                pull)
+                    _arguments $_cf_common $_cf_model '1:model to pull:'
+                    ;;
+                install-ollama|remove|restart|start|stop)
+                    _arguments $_cf_common
+                    ;;
+                status)
+                    _arguments $_cf_common $_cf_net
+                    ;;
+                exec)
+                    _arguments $_cf_common \
+                        '(-d -fd --redirect)'{-d,-fd,--redirect}'[File descriptor to redirect]:fd:_context_forge_fd' \
+                        '(-n -!nl --no-nl)'{-n,--no-nl}'[Disable auto trailing newline]' \
+                        '(-c -cmd --command)'{-c,-cmd,--command}'[Command to exec during client runtime]:command:_command_names -e' \
+                        '*::arguments:_files'
+                    ;;
+                setup)
+                    _arguments $_cf_common $_cf_net $_cf_model $_cf_dist \
+                        '(-C -cp --copy)'{-C,-cp,--copy}'[Copy file to an internal place during setup]'
+                    ;;
+                server)
+                    _arguments $_cf_common $_cf_net $_cf_model $_cf_dist
+                    ;;
+                check)
+                    local -a modes
+                    modes=('dist:Check mode dist' 'local:Check mode local')
+                    _arguments -C \
+                        '1: :->mode' \
+                        '*::arg:->checkflags'
+                    case $state in
+                        mode)
+                            _describe 'check mode' modes
+                            ;;
+                        checkflags)
+                            _arguments $_cf_common $_cf_net $_cf_model $_cf_dist
+                            ;;
+                    esac
+                    ;;
+            esac
+            ;;
+    esac
+}
+
+_context_forge "$@"
+
+# ---------------------------------------------------------------------------
+# Install / reload
+# ---------------------------------------------------------------------------
+# One-off, current shell only:
+#   fpath+=(/path/to/dir/containing/this/file)
+#   autoload -U compinit && compinit
+#
+# Permanent, per-user:
+#   mkdir -p ~/.zsh/completions
+#   cp _context-forge ~/.zsh/completions/
+#   # in ~/.zshrc, before compinit:
+#   fpath=(~/.zsh/completions $fpath)
+#   autoload -U compinit && compinit
+#
+# Reset/reload after editing the script (without opening a new shell):
+#   unfunction _context_forge 2>/dev/null
+#   autoload -U +X _context-forge   # re-reads the file from $fpath
+#   rm -f ~/.zcompdump; compinit    # only needed if you changed the file's
+#                                   # name or its position in $fpath
+#
+# Sanity check that it's picked up:
+#   which _context-forge

@@ -229,6 +229,19 @@ install(TARGETS ${TARGET}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT bin
 )
 
+# Shell completion (zsh)
+install(FILES ${CMAKE_SOURCE_DIR}/cmake/completions/zsh/_context-forge
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/zsh/site-functions
+    COMPONENT completions
+)
+
+# Shell completion (bash)
+install(FILES ${CMAKE_SOURCE_DIR}/cmake/completions/bash/context-forge
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/bash-completion/completions
+    COMPONENT completions
+    RENAME context-forge
+)
+
 # =========================
 # Utils
 # =========================
