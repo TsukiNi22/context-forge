@@ -280,6 +280,7 @@ void forge::Forge::init(int argc, const char *const argv[])
             {"argument", false, utils::arguments::defaultTrueParsingHook}
         },
         "Command to exec during the client runtime",
+        true,
         true
     );
     parser.setFlag("plugins",
