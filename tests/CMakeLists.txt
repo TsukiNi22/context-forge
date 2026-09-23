@@ -20,9 +20,18 @@ list(TRANSFORM SRC_FORGE PREPEND ${CMAKE_SOURCE_DIR}/)
 
 # Plugins class (only the class, the extern "C" interface is tested through the `plugins` target)
 set(SRC_FORGE_PLUGINS
+    # Triggers
     ${CMAKE_SOURCE_DIR}/src/forge/rules/triggers/default/plugin.cpp
+
+    # Pre-Rules
     ${CMAKE_SOURCE_DIR}/src/forge/rules/pre-rules/ansi/plugin.cpp
+
+    # Rules
     ${CMAKE_SOURCE_DIR}/src/forge/rules/rules/ln/plugin.cpp
+    ${CMAKE_SOURCE_DIR}/src/forge/rules/rules/drop/plugin.cpp
+    ${CMAKE_SOURCE_DIR}/src/forge/rules/rules/dup/plugin.cpp
+    ${CMAKE_SOURCE_DIR}/src/forge/rules/rules/insert/plugin.cpp
+    ${CMAKE_SOURCE_DIR}/src/forge/rules/rules/replace/plugin.cpp
 )
 
 set(SRC
@@ -33,6 +42,23 @@ set(SRC
     # Rules
     rules/AInstruction.cpp
     rules/Rules.cpp
+    rules/Pipeline.cpp
+
+    # Rules (sub-part: triggers)
+    rules/triggers/DefaultTrigger.cpp
+
+    # Rules (sub-part: pre-rules)
+    rules/pre-rules/AnsiPreRule.cpp
+
+    # Rules (sub-part: rules)
+    rules/rules/LnRule.cpp
+    rules/rules/DropRule.cpp
+    rules/rules/DupRule.cpp
+    rules/rules/InsertRule.cpp
+    rules/rules/ReplaceRule.cpp
+
+    # Plugins (shared object built by the `plugins` target)
+    plugins/Plugins.cpp
 )
 add_executable(${TARGET} ${SRC} ${SRC_FORGE} ${SRC_FORGE_PLUGINS})
 

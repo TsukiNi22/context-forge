@@ -29,6 +29,7 @@ __pycache__
 /runner
 #.info
 *.sh
+!/setup.sh
 perf.data
 perf.data.old
 CONTEXT.md
