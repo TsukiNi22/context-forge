@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Installation & setup · context-forge docs</title>
+<meta name="description" content="Download context-forge from packages or build from source, enable bash/zsh completion, register the user daemon and connect Ollama.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M4 22h24l-3 5H7z' fill='%23b5471f'/%3E%3Cpath d='M8 12h20v6H12l-4 4z' fill='%23b5471f'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+<script>try{var t=localStorage.getItem('cf-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+
+</head>
+<body>
+<header class="topbar">
+  <button class="icon-btn menu-btn" aria-label="Open navigation"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+  <a class="brand" href="index.html"><svg class="logo" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M4 22h24l-3 5H7l-3-5Z" fill="currentColor" opacity=".85"/><path d="M8 12h20v6H12l-4 4v-10Z" fill="currentColor"/><path d="M8 12V8h6v4" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><circle cx="22" cy="6" r="1.6" fill="#e8734a"/><circle cx="26.5" cy="9" r="1.1" fill="#e8734a"/></svg><span>context-forge</span><span class="ver">v1.0.0</span></a>
+  <nav class="topnav">
+<a href="index.html">Overview</a>
+<a href="install.html" class="active">User guide</a>
+<a href="plugins.html">Plugin development</a>
+<a href="graph.html">Architecture graph</a>
+  </nav>
+  <a class="icon-btn" href="https://github.com/TsukiNi22/context-forge" title="GitHub repository" aria-label="GitHub repository"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></a>
+  <button class="icon-btn" data-theme-toggle title="Toggle light/dark theme" aria-label="Toggle theme"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
+</header>
+<div class="shell">
+<aside class="sidebar">
+<h4>User guide</h4>
+<a href="install.html" class="active">Installation & setup</a>
+<div class="sub"><a href="#requirements">Requirements</a><a href="#packages">Install from packages</a><a href="#source">Build from source</a><a href="#layout">What gets installed where</a><a href="#completion">Shell completion</a><a href="#daemon">Register the daemon</a><a href="#ollama">Ollama (optional)</a><a href="#verify">Verify</a><a href="#uninstall">Uninstall</a></div>
+<a href="usage.html">Command reference</a>
+<a href="rules.html">Rule files</a>
+<h4>Developer guide</h4>
+<a href="plugins.html">Plugin development</a>
+<a href="graph.html">Architecture graph</a>
+</aside>
+<main class="content">
+
+<div class="page-eyebrow">User guide</div>
+<h1>Installation &amp; setup</h1>
+<p class="lead">Get the <code>context-forge</code> binary onto a Linux machine, make shell completion actually work, register the background service and (optionally) plug in a local Ollama model.</p>
+
+<div class="toc"><strong>On this page</strong>
+<a href="#requirements">Requirements</a>
+<a href="#packages">Install from packages</a>
+<a href="#source">Build from source</a>
+<a href="#layout">What gets installed where</a>
+<a href="#completion">Shell completion</a>
+<a href="#daemon">Register the daemon</a>
+<a href="#ollama">Ollama (optional)</a>
+<a href="#verify">Verify</a>
+<a href="#uninstall">Uninstall</a>
+</div>
+
+<h2 id="requirements">Requirements</h2>
+<ul>
+  <li><strong>Linux, x86_64</strong>, with a <strong>systemd user session</strong> (<code>systemctl --user</code> must work: the server is a user unit, not a system one).</li>
+  <li>Runtime libraries: <code>libconfig++</code> (soname <code>libconfig++.so.15</code>, i.e. a recent libconfig), OpenSSL 3, zlib, brotli, libstdc++. Fedora 44 provides all of them via the <code>libconfig</code> package; on other distributions check that <code>libconfig++.so.15</code> is available, otherwise <a href="#source">build from source</a> against your own libconfig.</li>
+  <li><code>bash</code> and <code>curl</code> on the <code>PATH</code> (used by <code>setup</code>, <code>status</code> and <code>install-ollama</code>).</li>
+  <li>Optional: <a href="https://ollama.com">Ollama</a> reachable over HTTP (default <code>localhost:11434</code>) for the LLM pass.</li>
+</ul>
+
+<div class="callout warn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg><div>
+<p><strong>Packages ship the binary and the shell completions only.</strong> The rule <em>plugins</em> (<code>trigger_default.so</code>, <code>pre-rule_ansi.so</code>, <code>rule_*.so</code>) are not packaged in v1.0.0: without them the server loads no rules and only the LLM pass can run. To use rules, <a href="#source">build the plugins from source</a> once and point <code>setup --plugins</code> at the resulting <code>plugins/</code> folder (or write <a href="plugins.html">your own</a>).</p></div></div>
+
+<h2 id="packages">Install from packages</h2>
+<p>Signed <code>.rpm</code> and <code>.deb</code> packages are published on the project's GitHub Pages. Two channels exist: <code>context-forge</code> (stable, built from <code>vX.Y.Z</code> tags) and <code>context-forge-pre</code> (pre-release, built from <code>vX.Y.Z-something</code> tags). They conflict with each other, so install one or the other.</p>
+
+<div class="tabs" data-tabs="pkg">
+  <button data-tab="fedora">Fedora / RPM</button>
+  <button data-tab="debian">Debian / Ubuntu</button>
+  <button data-tab="manual">Manual download</button>
+</div>
+<div class="tab-panel" data-tabs="pkg" data-tab="fedora">
+<p>The repository is laid out as <code>fedora/$releasever/$basearch</code>; Fedora <strong>44 / x86_64</strong> is what CI currently publishes.</p>
+<pre data-title="Add the repository and install"><code>sudo curl -fsSL -o /etc/yum.repos.d/context-forge.repo \
+     https://tsukini22.github.io/context-forge/context-forge.repo
+sudo rpm --import https://tsukini22.github.io/context-forge/RPM-GPG-KEY-tsukini
+sudo dnf install context-forge        <span class="c"># or: context-forge-pre</span>
+sudo dnf install libconfig            <span class="c"># runtime dependency, if not already present</span></code></pre>
+<p>The <code>.repo</code> file it downloads is simply:</p>
+<pre data-title="/etc/yum.repos.d/context-forge.repo"><code>[context-forge]
+name=context-forge repository
+baseurl=https://tsukini22.github.io/context-forge/fedora/$releasever/$basearch
+enabled=1
+gpgcheck=1
+gpgkey=https://tsukini22.github.io/context-forge/RPM-GPG-KEY-tsukini</code></pre>
+<div class="callout tip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V17h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2Z"/></svg><div><p>If <code>dnf</code> complains about an invalid hash after a new release, clear its cache: <code>sudo dnf clean all &amp;&amp; sudo dnf makecache</code>.</p></div></div>
+</div>
+<div class="tab-panel" data-tabs="pkg" data-tab="debian">
+<p>The APT repository serves <code>stable main</code> for <strong>amd64</strong> and is signed with the same key.</p>
+<pre data-title="Add the repository and install"><code>sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://tsukini22.github.io/context-forge/RPM-GPG-KEY-tsukini \
+  | gpg --dearmor | sudo tee /etc/apt/keyrings/context-forge.gpg &gt; /dev/null
+sudo chmod a+r /etc/apt/keyrings/context-forge.gpg
+
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/context-forge.gpg] \
+https://tsukini22.github.io/context-forge/debian stable main" \
+  | sudo tee /etc/apt/sources.list.d/context-forge.list &gt; /dev/null
+
+sudo apt-get update
+sudo apt-get install context-forge   <span class="c"># or: context-forge-pre</span></code></pre>
+<div class="callout warn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg><div><p>The <code>.deb</code> is produced by the same Fedora-based CI container as the <code>.rpm</code> and declares no dependencies. It expects <code>libconfig++.so.15</code> and a recent glibc/libstdc++; if <code>context-forge -h</code> fails with a missing shared library on your Debian/Ubuntu release, <a href="#source">build from source</a> instead.</p></div></div>
+</div>
+<div class="tab-panel" data-tabs="pkg" data-tab="manual">
+<p>You can also fetch a package file directly and install it with your package manager. The naming pattern is <code>context-forge[-pre]-&lt;version&gt;-Linux.&lt;rpm|deb&gt;</code>.</p>
+<pre><code><span class="c"># RPM</span>
+curl -fLO https://tsukini22.github.io/context-forge/fedora/44/x86_64/context-forge-1.0.0-Linux.rpm
+sudo dnf install ./context-forge-1.0.0-Linux.rpm
+
+<span class="c"># DEB</span>
+curl -fLO https://tsukini22.github.io/context-forge/debian/pool/main/context-forge-1.0.0-Linux.deb
+sudo apt-get install ./context-forge-1.0.0-Linux.deb</code></pre>
+<p>Browse the index at <a href="https://tsukini22.github.io/context-forge/">tsukini22.github.io/context-forge</a> (the <code>gh-pages</code> branch of the repository).</p>
+</div>
+
+<h2 id="source">Build from source</h2>
+<p>Building from source is required to get the plugins, and is the only way to install on distributions without a package. The build is CMake ≥ 3.20 and <strong>forces <code>clang++</code></strong> (set in <code>CMakeLists.txt</code>), C++20.</p>
+
+<h3 id="build-deps">Build dependencies</h3>
+<div class="table-wrap"><table>
+<tr><th>Dependency</th><th>Purpose</th><th>Fedora</th><th>Debian / Ubuntu</th></tr>
+<tr><td><code>clang</code>, <code>cmake</code>, <code>make</code>, <code>pkg-config</code></td><td>toolchain</td><td><code>clang cmake make pkgconf-pkg-config</code></td><td><code>clang cmake make pkg-config</code></td></tr>
+<tr><td><a href="https://github.com/TsukiNi22/libutils">libutils</a> ≥ 2.13.22</td><td>author's utility library (argument parser, process/pipe/shared-memory wrappers, exceptions, observer)</td><td colspan="2">see below — installed from the author's own package repository</td></tr>
+<tr><td>cpp-httplib</td><td>HTTP client to Ollama</td><td><code>cpp-httplib-devel</code></td><td><code>libcpp-httplib-dev</code></td></tr>
+<tr><td>libconfig++</td><td>parses <code>.cfg</code> rule files</td><td><code>libconfig-devel</code></td><td><code>libconfig++-dev</code></td></tr>
+<tr><td>nlohmann/json</td><td>Ollama request/response bodies</td><td><code>json-devel</code></td><td><code>nlohmann-json3-dev</code></td></tr>
+<tr><td>Python 3</td><td>generates <code>include/exception/generated_external_exception_header.hpp</code> at configure time</td><td><code>python3</code></td><td><code>python3</code></td></tr>
+<tr><td>GoogleTest <span class="muted">(tests only)</span></td><td><code>-DBUILD_TESTS=ON</code></td><td><code>gtest-devel</code></td><td><code>libgtest-dev</code></td></tr>
+<tr><td>ccache <span class="muted">(optional)</span></td><td>picked up automatically if present</td><td><code>ccache</code></td><td><code>ccache</code></td></tr>
+</table></div>
+
+<p><strong>libutils</strong> is published the same way as context-forge. Its <code>setup.sh</code> registers the repository for your distribution; then install the headers/CMake config (<code>libutils-dev</code>) and the optimized library (<code>libutils-op</code>) — or just the meta-package:</p>
+<pre data-title="Install libutils"><code>curl -fsSL https://raw.githubusercontent.com/TsukiNi22/libutils/main/setup.sh | bash -s
+sudo dnf install libutils            <span class="c"># Fedora  (pre-release channel: libutils-pre)</span>
+sudo apt-get install libutils        <span class="c"># Debian  (pre-release channel: libutils-pre)</span></code></pre>
+<div class="callout note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><div><p>CMake asks for <code>utils 2.13.22</code> or newer. At the time of writing that version only exists on the <code>-pre</code> channel, so use <code>libutils-pre</code> if the stable package is older. You can also build libutils from its repository (<code>cmake --build build --target install</code>) into <code>/usr/local</code>.</p></div></div>
+
+<h3 id="build-steps">Build</h3>
+<pre data-title="Clone and build (Debug by default)"><code>git clone https://github.com/TsukiNi22/context-forge.git
+cd context-forge
+make                     <span class="c"># = cmake -S . -B build && cmake --build build --parallel</span></code></pre>
+<p>Outputs land <em>in the source tree</em>, not in <code>build/</code>:</p>
+<pre data-nocopy><code>context-forge/
+├── context-forge                  ← the executable
+└── plugins/
+    ├── triggers/trigger_default.so
+    ├── pre-rules/pre-rule_ansi.so
+    └── rules/rule_ln.so  rule_drop.so  rule_dup.so  rule_insert.so  rule_replace.so</code></pre>
+<p>Other useful targets:</p>
+<div class="table-wrap"><table>
+<tr><th>Command</th><th>Effect</th></tr>
+<tr><td><code>cmake --build build --target release</code></td><td>Reconfigure with <code>-DCMAKE_BUILD_TYPE=Optimized</code> (<code>-O3 -march=native …</code>) and rebuild.</td></tr>
+<tr><td><code>cmake -S . -B build -DCMAKE_BUILD_TYPE=Asan</code></td><td>AddressSanitizer build.</td></tr>
+<tr><td><code>cmake --build build --target plugins</code></td><td>Build only the seven shared objects.</td></tr>
+<tr><td><code>cmake -S . -B build -DBUILD_TESTS=ON &amp;&amp; cmake --build build &amp;&amp; (cd build &amp;&amp; ctest --output-on-failure)</code></td><td>Build and run the GoogleTest suite (<code>./unit_tests</code>).</td></tr>
+<tr><td><code>cmake --build build --target package_release</code></td><td>Produce <code>.rpm</code>/<code>.deb</code> in <code>build/</code> with CPack.</td></tr>
+<tr><td><code>make re</code> / <code>make fclean</code></td><td>Full rebuild / remove <code>build/</code>.</td></tr>
+</table></div>
+
+<h3 id="install-step">Install the binary and completions</h3>
+<pre><code>sudo cmake --install build          <span class="c"># prefix /usr/local</span></code></pre>
+<p>This installs <code>/usr/local/bin/context-forge</code>, <code>/usr/local/share/zsh/site-functions/_context-forge</code> and <code>/usr/local/share/bash-completion/completions/context-forge</code>. Plugins are <em>not</em> installed by this step — keep the <code>plugins/</code> folder around or let <code>setup --copy</code> clone it (next sections).</p>
+<div class="callout warn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg><div><p><code>context-forge setup</code> writes the absolute path of the binary into the systemd unit and only looks in <strong><code>/usr/local/bin</code></strong> and <strong><code>/usr/bin</code></strong>. Running <code>setup</code> straight from the build directory without installing fails with <em>Missing binary</em>. Either install, or symlink: <code>sudo ln -s "$PWD/context-forge" /usr/local/bin/context-forge</code>.</p></div></div>
+
+<h2 id="layout">What gets installed where</h2>
+<div class="table-wrap"><table>
+<tr><th>File</th><th>Package (<code>/usr</code>)</th><th><code>cmake --install</code> (<code>/usr/local</code>)</th></tr>
+<tr><td>binary</td><td><code>/usr/bin/context-forge</code></td><td><code>/usr/local/bin/context-forge</code></td></tr>
+<tr><td>zsh completion</td><td><code>/usr/share/zsh/site-functions/_context-forge</code></td><td><code>/usr/local/share/zsh/site-functions/_context-forge</code></td></tr>
+<tr><td>bash completion</td><td><code>/usr/share/bash-completion/completions/context-forge</code></td><td><code>/usr/local/share/bash-completion/completions/context-forge</code></td></tr>
+<tr><td>systemd unit <span class="muted">(created by <code>setup</code>)</span></td><td colspan="2"><code>~/.config/systemd/user/context-forge.service</code></td></tr>
+<tr><td>cloned resources <span class="muted">(created by <code>setup --copy</code>)</span></td><td colspan="2"><code>~/.config/context-forge/plugins/</code>, <code>~/.config/context-forge/rules/</code>, <code>~/.config/context-forge/system-prompt</code></td></tr>
+</table></div>
+
+<h2 id="completion">Shell completion</h2>
+<p>Both completion scripts are installed for you, but <strong>neither shell picks them up automatically in every configuration</strong>. Here is what to check for each shell.</p>
+
+<div class="tabs" data-tabs="sh">
+  <button data-tab="zsh">zsh</button>
+  <button data-tab="bash">bash</button>
+  <button data-tab="norepo">Without installing</button>
+</div>
+
+<div class="tab-panel" data-tabs="sh" data-tab="zsh">
+<p>zsh only loads a completion file if (1) its directory is in <code>$fpath</code> <em>before</em> <code>compinit</code> runs and (2) <code>compinit</code> is actually called. Frameworks such as oh-my-zsh call <code>compinit</code> for you; a bare <code>~/.zshrc</code> usually does not.</p>
+<ol class="steps">
+<li><strong>Check whether the directory is already in <code>$fpath</code></strong>
+<pre><code>print -l $fpath | grep -n 'site-functions'
+which _context-forge        <span class="c"># after compinit: prints the file path if it is picked up</span></code></pre>
+<p>Distribution zsh builds normally include <code>/usr/share/zsh/site-functions</code> (the package location) and often <code>/usr/local/share/zsh/site-functions</code> (the <code>cmake --install</code> location) — but if you set <code>fpath=(…)</code> yourself in <code>.zshrc</code> without <code>$fpath</code> at the end, those defaults are gone.</p></li>
+<li><strong>Add the directory and initialise completion</strong>Put this in <code>~/.zshrc</code>, <em>before</em> any existing <code>compinit</code> line:
+<pre data-title="~/.zshrc"><code><span class="c"># pick the one matching how you installed:</span>
+fpath=(/usr/share/zsh/site-functions $fpath)         <span class="c"># package</span>
+fpath=(/usr/local/share/zsh/site-functions $fpath)   <span class="c"># cmake --install</span>
+
+autoload -Uz compinit &amp;&amp; compinit</code></pre></li>
+<li><strong>Reload without opening a new shell</strong>
+<pre><code>unfunction _context-forge 2&gt;/dev/null
+rm -f ~/.zcompdump*          <span class="c"># zsh caches the list of completion files</span>
+exec zsh</code></pre>
+<p>Then type <code>context-forge </code> and press <kbd>Tab</kbd>: you should see the sub-commands (<code>exec</code>, <code>setup</code>, <code>server</code>, …). <code>context-forge exec -</code><kbd>Tab</kbd> lists the flags, and <code>-v </code><kbd>Tab</kbd> offers <code>none basic advanced debug</code>.</p></li>
+</ol>
+<p><strong>Per-user alternative</strong> (no root, survives package removal), as suggested in the script header:</p>
+<pre><code>mkdir -p ~/.zsh/completions
+cp /usr/share/zsh/site-functions/_context-forge ~/.zsh/completions/   <span class="c"># or from the repo: cmake/completions/zsh/_context-forge</span>
+<span class="c"># in ~/.zshrc, before compinit:</span>
+fpath=(~/.zsh/completions $fpath)
+autoload -Uz compinit &amp;&amp; compinit</code></pre>
+<div class="callout note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><div><p><strong>"zsh compinit: insecure directories" warning?</strong> zsh refuses group/world-writable directories in <code>$fpath</code>. Fix the permissions (<code>compaudit</code> lists the culprits; <code>chmod go-w</code> them) rather than using <code>compinit -u</code>.</p></div></div>
+</div>
+
+<div class="tab-panel" data-tabs="sh" data-tab="bash">
+<p>The script is written for the <strong>bash-completion</strong> framework (≥ 2.x), which lazy-loads <code>completions/context-forge</code> the first time you press <kbd>Tab</kbd> after the command name. It searches <code>$XDG_DATA_DIRS</code> (default <code>/usr/local/share:/usr/share</code>), so both install locations are covered — provided the framework is installed and sourced.</p>
+<ol class="steps">
+<li><strong>Make sure bash-completion is installed and loaded</strong>
+<pre><code>sudo dnf install bash-completion        <span class="c"># Fedora</span>
+sudo apt-get install bash-completion    <span class="c"># Debian / Ubuntu</span>
+type _init_completion                   <span class="c"># "is a function" → framework is loaded in this shell</span></code></pre>
+<p>Interactive login shells source it through <code>/etc/profile.d/bash_completion.sh</code>. If <code>_init_completion</code> is missing, add to <code>~/.bashrc</code>:</p>
+<pre data-title="~/.bashrc"><code>[ -r /usr/share/bash-completion/bash_completion ] &amp;&amp; . /usr/share/bash-completion/bash_completion</code></pre></li>
+<li><strong>Or source the script directly</strong> (works without the framework, thanks to its built-in fallback):
+<pre data-title="~/.bashrc"><code>. /usr/share/bash-completion/completions/context-forge          <span class="c"># package</span>
+<span class="c"># . /usr/local/share/bash-completion/completions/context-forge  # cmake --install</span></code></pre></li>
+<li><strong>Reload and check</strong>
+<pre><code>complete -r context-forge 2&gt;/dev/null      <span class="c"># drop a stale registration</span>
+source ~/.bashrc
+complete -p context-forge                  <span class="c"># → complete -F _context_forge_completions context-forge</span></code></pre></li>
+</ol>
+<p>Per-user copy: <code>mkdir -p ~/.local/share/bash-completion/completions &amp;&amp; cp /usr/share/bash-completion/completions/context-forge ~/.local/share/bash-completion/completions/</code> — new shells pick it up automatically.</p>
+</div>
+
+<div class="tab-panel" data-tabs="sh" data-tab="norepo">
+<p>The scripts live in the repository under <code>cmake/completions/</code>; you can use them from a clone without installing anything system-wide:</p>
+<pre><code><span class="c"># zsh (current shell only)</span>
+fpath+=("$PWD/cmake/completions/zsh"); autoload -Uz compinit &amp;&amp; compinit
+
+<span class="c"># bash (current shell only)</span>
+source cmake/completions/bash/context-forge</code></pre>
+<p>Other shells (fish, nushell…) are not provided in v1.0.0.</p>
+</div>
+
+<h2 id="daemon">Register the daemon</h2>
+<p>context-forge is split in two: <code>exec</code> (the client you call from your shell) and <code>server</code> (a long-lived process that holds the loaded plugins, rules and Ollama session). <code>setup</code> generates and enables a systemd <strong>user</strong> unit for the server. Run it as your normal user — not with <code>sudo</code>.</p>
+
+<pre data-title="Typical setup"><code>context-forge setup --copy --recursive \
+    --plugins ~/src/context-forge/plugins \
+    --rules   ~/forge/rules \
+    --system-prompt ~/forge/system-prompt   <span class="c"># omit to disable the LLM pass</span></code></pre>
+
+<p>What <code>setup</code> does, step by step:</p>
+<ol>
+<li>Locates the binary (<code>/usr/local/bin</code> then <code>/usr/bin</code>).</li>
+<li>With <code>--copy</code>: clones <code>*.so</code> from the plugins directory into <code>~/.config/context-forge/plugins/</code>, <code>*.cfg</code> into <code>~/.config/context-forge/rules/</code> (recursively if <code>--recursive</code>) and the system prompt to <code>~/.config/context-forge/system-prompt</code>. Without <code>--copy</code> the unit references your directories directly, so edits are picked up on the next restart.</li>
+<li>Writes <code>~/.config/systemd/user/context-forge.service</code>:
+<pre data-nocopy data-title="~/.config/systemd/user/context-forge.service (generated)"><code>[Unit]
+Description=context-forge daemon
+After=network.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=2
+ExecStart=/usr/bin/context-forge server --recursive --plugins /home/you/.config/context-forge/plugins --rules /home/you/.config/context-forge/rules --system-prompt /home/you/.config/context-forge/system-prompt
+
+[Install]
+WantedBy=default.target</code></pre></li>
+<li>Runs <code>systemctl --user daemon-reload</code>, <code>enable</code> and <code>restart</code> on the unit.</li>
+</ol>
+<p>Every server option can be passed to <code>setup</code> and is baked into <code>ExecStart</code>: <code>--ip</code>, <code>--port</code>, <code>--model</code>, <code>--verbose LEVEL</code>. Re-run <code>setup</code> whenever you want to change them; it overwrites the unit.</p>
+
+<div class="callout tip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V17h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2Z"/></svg><div><p><strong>Dry-run before you commit.</strong> <code>context-forge check local --plugins … --rules … -v debug</code> loads everything exactly like the server would and prints each plugin and rule file as it is accepted or rejected, then exits. After a <code>setup --copy</code>, <code>context-forge check dist</code> validates the cloned copies.</p></div></div>
+
+<p>To start the daemon on boot without an open session (headless machines), enable lingering once: <code>sudo loginctl enable-linger "$USER"</code>.</p>
+
+<h2 id="ollama">Ollama (optional)</h2>
+<p>The LLM pass rewrites the (already rule-formatted) output with a model served by Ollama, guided by a <em>system prompt</em> file you provide. It is enabled only when the server was given <code>--system-prompt</code> and the model can be reached at start-up; failures are logged and the pass is skipped until the next restart.</p>
+<ol class="steps">
+<li><strong>Install Ollama</strong> — either from <a href="https://ollama.com/download">ollama.com</a> or through the wrapper (it runs the official install script and therefore needs root):
+<pre><code>sudo context-forge install-ollama</code></pre></li>
+<li><strong>Pull a model</strong> — the default is <code>qwen2.5-coder:1.5b</code>:
+<pre><code>context-forge pull qwen2.5-coder:1.5b
+ollama serve &amp;                          <span class="c"># if Ollama is not already running as a service</span></code></pre></li>
+<li><strong>Write a system prompt</strong> — a plain text file. The server sends your prompt as <code>system</code> and, as the user message, the wrapped command name and its output wrapped in <code>&lt;binary&gt;…&lt;/binary&gt;</code> and <code>&lt;output&gt;…&lt;/output&gt;</code> tags. Design the prompt around that:
+<pre data-title="~/forge/system-prompt"><code>You receive the output of a shell command inside &lt;output&gt; tags and the program name inside &lt;binary&gt;.
+Return the same information, shortened: keep errors and warnings verbatim, collapse repetitive lines,
+never add commentary. Output plain text only.</code></pre></li>
+<li><strong>Point the server at it</strong> (<code>--system-prompt</code>, plus <code>--model</code>/<code>--ip</code>/<code>--port</code> if not default) and restart:
+<pre><code>context-forge setup --copy --recursive --plugins … --rules … --system-prompt ~/forge/system-prompt --model qwen2.5-coder:1.5b
+context-forge status</code></pre></li>
+</ol>
+<p>The server keeps the model loaded by pinging Ollama with <code>keep_alive: 10m</code> on a schedule while it runs, so the first wrapped command after a restart is the only slow one.</p>
+
+<h2 id="verify">Verify the installation</h2>
+<pre><code>context-forge status</code></pre>
+<pre data-nocopy><code>server: running
+ollama: installed / running</code></pre>
+<p>Then wrap something:</p>
+<pre><code>context-forge exec -v advanced -c ls -la</code></pre>
+<p>With <code>-v advanced</code> the client prints the raw and formatted blocks around the command output, which is the quickest way to see rules taking effect. If you see <code>[FALLBACK] context-forge: server is unavailable…</code> the command still ran, untouched; check <code>journalctl --user -u context-forge</code>.</p>
+
+<h2 id="uninstall">Uninstall</h2>
+<pre><code>context-forge remove                 <span class="c"># stops + disables the unit, deletes it and ~/.config/context-forge</span>
+sudo dnf remove context-forge        <span class="c"># or: sudo apt-get remove context-forge</span>
+<span class="c"># from-source install: remove the three files listed in "What gets installed where"</span></code></pre>
+
+<div class="pager">
+  <a href="index.html"><span>Previous</span>Overview</a>
+  <a class="next" href="usage.html"><span>Next</span>Command reference</a>
+</div>
+
+</main>
+</div>
+<footer class="site">context-forge documentation · generated from the <a href="https://github.com/TsukiNi22/context-forge">TsukiNi22/context-forge</a> repository (v1.0.0, MIT) · not affiliated with Ollama.</footer>
+<script src="assets/site.js"></script>
+
+</body>
+</html>

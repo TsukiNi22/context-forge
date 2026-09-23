@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plugin development · context-forge docs</title>
+<meta name="description" content="Technical guide to writing a context-forge plugin of any type (trigger, pre-rule, rule): ABI, interfaces, a complete worked example, CMake, out-of-tree builds and tests.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M4 22h24l-3 5H7z' fill='%23b5471f'/%3E%3Cpath d='M8 12h20v6H12l-4 4z' fill='%23b5471f'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+<script>try{var t=localStorage.getItem('cf-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+
+</head>
+<body>
+<header class="topbar">
+  <button class="icon-btn menu-btn" aria-label="Open navigation"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+  <a class="brand" href="index.html"><svg class="logo" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M4 22h24l-3 5H7l-3-5Z" fill="currentColor" opacity=".85"/><path d="M8 12h20v6H12l-4 4v-10Z" fill="currentColor"/><path d="M8 12V8h6v4" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><circle cx="22" cy="6" r="1.6" fill="#e8734a"/><circle cx="26.5" cy="9" r="1.1" fill="#e8734a"/></svg><span>context-forge</span><span class="ver">v1.0.0</span></a>
+  <nav class="topnav">
+<a href="index.html">Overview</a>
+<a href="install.html">User guide</a>
+<a href="plugins.html" class="active">Plugin development</a>
+<a href="graph.html">Architecture graph</a>
+  </nav>
+  <a class="icon-btn" href="https://github.com/TsukiNi22/context-forge" title="GitHub repository" aria-label="GitHub repository"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></a>
+  <button class="icon-btn" data-theme-toggle title="Toggle light/dark theme" aria-label="Toggle theme"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
+</header>
+<div class="shell">
+<aside class="sidebar">
+<h4>Developer guide</h4>
+<a href="plugins.html" class="active">Plugin development</a>
+<div class="sub"><a href="#big-picture">The big picture</a><a href="#types">The three plugin types</a><a href="#abi">The ABI contract</a><a href="#interfaces">The C++ interfaces</a><a href="#lifecycle">Lifecycle & guarantees</a><a href="#walkthrough">Walkthrough: a rule plugin</a><a href="#trigger-example">Example: a trigger</a><a href="#prerule-example">Example: a pre-rule</a><a href="#cmake">CMake wiring</a><a href="#out-of-tree">Out-of-tree plugins</a><a href="#testing">Testing</a><a href="#libutils">libutils cheat-sheet</a><a href="#internals">Server internals</a><a href="#checklist">Checklist</a></div>
+<a href="graph.html">Architecture graph</a>
+<h4>User guide</h4>
+<a href="install.html">Installation & setup</a>
+<a href="usage.html">Command reference</a>
+<a href="rules.html">Rule files</a>
+</aside>
+<main class="content">
+
+<div class="page-eyebrow">Developer guide</div>
+<h1>Writing a plugin</h1>
+<p class="lead">A plugin is a shared object that exports three C symbols and one C++ class. This guide covers the contract the server expects, the internals you need to reason about, a complete worked example for each of the three plugin types, how to wire it into CMake (in-tree or out-of-tree) and how to test it.</p>
+
+<div class="toc"><strong>On this page</strong>
+<a href="#big-picture">The big picture</a>
+<a href="#types">The three plugin types</a>
+<a href="#abi">The ABI contract</a>
+<a href="#interfaces">The C++ interfaces</a>
+<a href="#lifecycle">Lifecycle &amp; guarantees</a>
+<a href="#walkthrough">Walkthrough: a rule plugin</a>
+<a href="#trigger-example">Example: a trigger</a>
+<a href="#prerule-example">Example: a pre-rule</a>
+<a href="#cmake">CMake wiring</a>
+<a href="#out-of-tree">Out-of-tree plugins</a>
+<a href="#testing">Testing</a>
+<a href="#libutils">libutils cheat-sheet</a>
+<a href="#internals">Server internals</a>
+<a href="#checklist">Checklist</a>
+</div>
+
+<h2 id="big-picture">The big picture</h2>
+<p>The server (<code>forge::Forge</code>) never knows concrete rule classes. At start-up it <code>dlopen</code>s every <code>*.so</code> in the plugins directory, asks each for its <em>type</em>, its <em>name</em> and a <em>factory function</em>, and files the factory under the name. Later, while parsing a rule file, every top-level key is looked up in that map: the factory creates a fresh instance, the instance parses its own settings, and the instance is stored in a <code>forge::rules::Rules</code> object that represents the file. At request time, <code>Rules::trigger()</code> and <code>Rules::apply()</code> walk those instances.</p>
+
+<figure>
+<svg class="diagram" viewBox="0 0 880 330" role="img" aria-label="Loading sequence: Forge::load iterates *.so files calling loadPlugin which dlopens and reads type(), name(), factory; then iterates *.cfg files calling loadCFG which, for each key, calls the factory, then instance.load(setting), then rules.push(instance).">
+  <defs><marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs>
+  <g font-family="var(--font)" font-size="13" fill="var(--text)">
+    <!-- lanes -->
+    <g font-weight="700" text-anchor="middle">
+      <rect x="20" y="16" width="170" height="30" rx="7" fill="var(--surface)" stroke="var(--border)"/><text x="105" y="36">Forge (server)</text>
+      <rect x="240" y="16" width="170" height="30" rx="7" fill="var(--surface)" stroke="var(--border)"/><text x="325" y="36">your_plugin.so</text>
+      <rect x="460" y="16" width="170" height="30" rx="7" fill="var(--surface)" stroke="var(--border)"/><text x="545" y="36">plugin instance</text>
+      <rect x="680" y="16" width="180" height="30" rx="7" fill="var(--surface)" stroke="var(--border)"/><text x="770" y="36">Rules (one per .cfg)</text>
+    </g>
+    <g stroke="var(--border)" stroke-dasharray="4 4"><path d="M105 46V318"/><path d="M325 46V318"/><path d="M545 46V318"/><path d="M770 46V318"/></g>
+    <!-- phase labels -->
+    <text x="20" y="70" font-size="11" fill="var(--accent)" font-weight="700" letter-spacing=".08em">LOAD PLUGINS · for each *.so</text>
+    <g stroke="var(--muted)" stroke-width="1.4" marker-end="url(#ar2)">
+      <path d="M105 88H323"/><path d="M105 112H323"/><path d="M105 136H323"/>
+    </g>
+    <g font-family="var(--mono)" font-size="12">
+      <text x="120" y="83">dlopen → int type()</text>
+      <text x="120" y="107">const char* name()</text>
+      <text x="120" y="131">T* (*factory)()   ← stored under name</text>
+    </g>
+    <text x="20" y="172" font-size="11" fill="var(--accent)" font-weight="700" letter-spacing=".08em">LOAD RULES · for each *.cfg, for each top-level key</text>
+    <g stroke="var(--muted)" stroke-width="1.4" marker-end="url(#ar2)">
+      <path d="M105 190H323"/><path d="M325 208H543"/><path d="M105 232H543"/><path d="M105 256H768"/>
+    </g>
+    <g font-family="var(--mono)" font-size="12">
+      <text x="120" y="185">factory()</text>
+      <text x="340" y="203">new YourRule</text>
+      <text x="120" y="227">instance-&gt;load(setting[key])   (throws → whole file rejected)</text>
+      <text x="120" y="251">rules.push(std::unique_ptr&lt;T&gt;(instance))</text>
+    </g>
+    <text x="20" y="290" font-size="11" fill="var(--accent)" font-weight="700" letter-spacing=".08em">PER REQUEST · for each Rules</text>
+    <g stroke="var(--muted)" stroke-width="1.4" marker-end="url(#ar2)"><path d="M105 306H768"/></g>
+    <text x="120" y="301" font-family="var(--mono)" font-size="12">if rules.trigger(bin, content) → rules.apply(bin, content)   → trigger() / format() on your instance</text>
+  </g>
+</svg>
+<figcaption>Loading happens once at server start (or on <code>check</code>). Requests are served sequentially on the server's single thread.</figcaption>
+</figure>
+
+<h2 id="types">The three plugin types</h2>
+<div class="table-wrap"><table>
+<tr><th>Type</th><th><code>type()</code></th><th>Base class</th><th>Method to implement</th><th>When it runs</th><th>Shipped examples</th></tr>
+<tr><td><span class="pill trigger">trigger</span></td><td><code>TYPE_TRIGGER</code> = 0</td><td><code>forge::rules::ITrigger</code></td><td><code>bool trigger(const std::string&amp; bin, const std::string&amp; content)</code></td><td>Before anything else, on the untouched content. Any <code>true</code> among a file's triggers enables the file.</td><td><code>trigger</code> (<code>DefaultTrigger</code>)</td></tr>
+<tr><td><span class="pill pre">pre-rule</span></td><td><code>TYPE_PRE_RULE</code> = 1</td><td><code>forge::rules::IPreRule</code></td><td><code>void format(const std::string&amp; bin, std::string&amp; content)</code></td><td>On each block, before every rule of the file.</td><td><code>ansi</code> (<code>AnsiPreRule</code>)</td></tr>
+<tr><td><span class="pill rule">rule</span></td><td><code>TYPE_RULE</code> = 2</td><td><code>forge::rules::IRule</code></td><td><code>void format(const std::string&amp; bin, std::string&amp; content)</code></td><td>On each block, after the pre-rules, in file order.</td><td><code>ln</code>, <code>drop</code>, <code>dup</code>, <code>replace</code>, <code>insert</code></td></tr>
+</table></div>
+<p><code>IPreRule</code> and <code>IRule</code> have the same signature; the split exists only to guarantee ordering: normalisation (strip colours, decode, unwrap) belongs to pre-rules, content edits to rules.</p>
+
+<h2 id="abi">The ABI contract</h2>
+<p>The loader (<code>forge::Forge::loadPlugin</code>, <code>src/forge/Forge-Loading.cpp</code>) resolves exactly three unmangled symbols, so they must be inside <code>extern "C"</code>:</p>
+<pre data-title="Required exports"><code><span class="k">extern</span> <span class="s">"C"</span> {
+    <span class="k">int</span>         type(<span class="k">void</span>);     <span class="c">// TYPE_TRIGGER (0) | TYPE_PRE_RULE (1) | TYPE_RULE (2)   — from forge/Forge.hpp</span>
+    <span class="k">const char</span>* name(<span class="k">void</span>);     <span class="c">// the key users write in .cfg files; unique across all loaded plugins</span>
+    T*          factory(<span class="k">void</span>);  <span class="c">// T = forge::rules::ITrigger | IPreRule | IRule, matching type(); returns `new Concrete`</span>
+}</code></pre>
+<p>Rules enforced at load time (a violation rejects that <code>.so</code> only, with a message at <code>-v debug</code>):</p>
+<ul>
+<li><code>type()</code> must be 0, 1 or 2. The loader casts <code>factory</code> to the pointer type matching <code>type()</code> — a mismatch is undefined behaviour, not an error.</li>
+<li><code>name()</code> must not collide with another loaded plugin, and must not be <code>enable</code> or <code>block</code> (built-ins).</li>
+<li>The object returned by <code>factory()</code> is owned by the server and released with <code>delete</code> through the interface's virtual destructor, so allocate it with plain <code>new</code>.</li>
+</ul>
+<p>The file name of the shared object is irrelevant (<code>rule_ln.so</code>, <code>libwhatever.so</code>, …): only the extension <code>.so</code> matters for discovery. In the repository each plugin is split in three source files, and the per-kind <code>type()</code> lives in a file shared by all plugins of that kind:</p>
+<pre data-nocopy><code>include/forge/rules/rules/LnRule.hpp        ← class declaration
+src/forge/rules/rules/lib.cpp               ← int type() { return TYPE_RULE; }      (shared by every rule)
+src/forge/rules/rules/ln/lib.cpp            ← name() + factory()
+src/forge/rules/rules/ln/plugin.cpp         ← load() + format()                    (also compiled into unit_tests)</code></pre>
+
+<h2 id="interfaces">The C++ interfaces</h2>
+<p>All interfaces live in <code>namespace forge::rules</code>, under <code>include/forge/rules/</code>. The hierarchy:</p>
+<figure>
+<svg class="diagram" viewBox="0 0 880 250" role="img" aria-label="Class hierarchy: IInstruction (privately inherits utils Observer) is the root; AInstruction adds the name; ITrigger, IPreRule and IRule derive from AInstruction; DefaultTrigger, AnsiPreRule and the five rules derive from those.">
+  <g font-family="var(--mono)" font-size="12.5" fill="var(--text)" text-anchor="middle">
+    <rect x="330" y="10" width="220" height="40" rx="7" fill="var(--surface)" stroke="var(--border)"/><text x="440" y="27">IInstruction</text><text x="440" y="43" font-size="11" fill="var(--muted)">name() = 0 · load(Setting) = 0</text>
+    <rect x="330" y="72" width="220" height="40" rx="7" fill="var(--surface)" stroke="var(--border)"/><text x="440" y="89">AInstruction</text><text x="440" y="105" font-size="11" fill="var(--muted)">name() final · AInstruction(name)</text>
+    <rect x="60" y="140" width="200" height="40" rx="7" fill="color-mix(in srgb,#7a3fb0 12%,var(--surface))" stroke="#7a3fb0"/><text x="160" y="157">ITrigger</text><text x="160" y="173" font-size="11" fill="var(--muted)">trigger(bin, content) = 0</text>
+    <rect x="340" y="140" width="200" height="40" rx="7" fill="color-mix(in srgb,#1f7a8c 12%,var(--surface))" stroke="#1f7a8c"/><text x="440" y="157">IPreRule</text><text x="440" y="173" font-size="11" fill="var(--muted)">format(bin, content&amp;) = 0</text>
+    <rect x="620" y="140" width="200" height="40" rx="7" fill="var(--accent-soft)" stroke="var(--accent)"/><text x="720" y="157">IRule</text><text x="720" y="173" font-size="11" fill="var(--muted)">format(bin, content&amp;) = 0</text>
+    <rect x="60" y="205" width="200" height="30" rx="7" fill="var(--surface)" stroke="var(--border)" stroke-dasharray="3 3"/><text x="160" y="224">DefaultTrigger · yours</text>
+    <rect x="340" y="205" width="200" height="30" rx="7" fill="var(--surface)" stroke="var(--border)" stroke-dasharray="3 3"/><text x="440" y="224">AnsiPreRule · yours</text>
+    <rect x="620" y="205" width="200" height="30" rx="7" fill="var(--surface)" stroke="var(--border)" stroke-dasharray="3 3"/><text x="720" y="224">LnRule DropRule … · yours</text>
+    <text x="560" y="32" font-size="11" fill="var(--muted)" text-anchor="start">: private Observer&lt;"IInstruction"&gt; (libutils)</text>
+  </g>
+  <g stroke="var(--muted)" stroke-width="1.4" fill="none">
+    <path d="M440 72V50"/><path d="M160 140V125H720V140M440 112V140"/><path d="M160 205V180M440 205V180M720 205V180"/>
+  </g>
+</svg>
+<figcaption>Solid boxes are provided by context-forge; dashed boxes are what you write. Copy and move are deleted all the way down.</figcaption>
+</figure>
+
+<h3 id="iinstruction">IInstruction / AInstruction — common to all types</h3>
+<pre data-title="include/forge/rules/IInstruction.hpp (excerpt)"><code><span class="k">class</span> IInstruction: <span class="k">private</span> utils::security::observer::Observer&lt;<span class="s">"IInstruction"</span>&gt; {
+<span class="k">public</span>:
+    <span class="k">virtual</span> std::string name(<span class="k">void</span>) <span class="k">const</span> = 0;                 <span class="c">// debug label printed by the server</span>
+    <span class="k">virtual void</span> load(<span class="k">const</span> libconfig::Setting&amp; s) = 0;      <span class="c">// parse your settings; throw on invalid input</span>
+    <span class="k">virtual</span> ~IInstruction() = <span class="k">default</span>;
+    <span class="c">// copy/move deleted</span>
+};</code></pre>
+<p><code>AInstruction</code> implements <code>name()</code> from a string given to its constructor. You never derive from these two directly: derive from <code>ITrigger</code>, <code>IPreRule</code> or <code>IRule</code>, and pass your plugin name up the chain — <code>LnRule(): IRule("ln") {}</code>. The name you pass here is only used in logs; the name that matters for <code>.cfg</code> files is the one returned by the C function <code>name()</code>. Keep them identical to avoid confusion.</p>
+<p>The private <code>Observer</code> base counts live instances per label; the test-suite uses it to detect leaks (<code>AInstructionLeakTest</code>). It needs nothing from you.</p>
+
+<h3 id="load">load(const libconfig::Setting&amp; s)</h3>
+<p><code>s</code> is the setting whose key is your plugin name, in one rule file. Its shape is entirely yours: a scalar (<code>ansi = false;</code>), an array (<code>drop = [...]</code>) or a group (<code>ln = { ... };</code>). Validate types explicitly — libconfig throws <code>SettingTypeException</code> on a bad cast, which is a less useful message — and report problems by throwing an <code>ErrorException</code> with the <code>Rules</code> external code and the setting path:</p>
+<pre><code><span class="k">if</span> (s[<span class="s">"head"</span>].getType() != libconfig::Setting::TypeInt) _unlikely {
+    <span class="k">throw</span> utils::exception::ErrorException(
+        utils::exception::ExternalCode::Rules,
+        s[<span class="s">"head"</span>].getPath() + <span class="s">": the head value must be an integer"</span>);
+}</code></pre>
+<p>Any exception escaping <code>load()</code> rejects the <strong>whole rule file</strong> (the message is logged with <code>-v debug</code> and by <code>check</code>), other files are unaffected. Do expensive preparation here — compile regexes, build lookup tables — <code>load()</code> runs once per file at start-up.</p>
+<p>Useful libconfig calls: <code>s.exists("k")</code>, <code>s["k"]</code>, <code>s.getType()</code> (<code>TypeInt</code>, <code>TypeInt64</code>, <code>TypeFloat</code>, <code>TypeString</code>, <code>TypeBoolean</code>, <code>TypeArray</code>, <code>TypeList</code>, <code>TypeGroup</code>), <code>s.isArray()</code>, <code>s.getLength()</code>, <code>s[i]</code>, <code>static_cast&lt;int&gt;(s)</code>, <code>static_cast&lt;const char*&gt;(s)</code>, <code>s.lookupValue("k", var)</code>, <code>s.getPath()</code>.</p>
+
+<h3 id="trigger-iface">ITrigger::trigger(bin, content)</h3>
+<p>Return <code>true</code> to enable the file. <code>bin</code> is the program name as typed after <code>exec -c</code>; <code>content</code> is the full captured output, not yet block-split or formatted. Called for every request on every file that has triggers, so keep it cheap; the built-in short-circuits on the first <code>true</code>.</p>
+
+<h3 id="format-iface">IPreRule::format / IRule::format(bin, content&amp;)</h3>
+<p>Edit <code>content</code> in place. It holds <em>one block</em> (the whole output unless the file uses <code>block</code>). Blocks are joined afterwards with <code>block.sep</code>. Common line handling helper, copied verbatim in each shipped rule (there is no shared helper header yet):</p>
+<pre><code><span class="k">static</span> std::vector&lt;std::string&gt; splitLines(<span class="k">const</span> std::string&amp; content) {
+    std::vector&lt;std::string&gt; lines; std::size_t start = 0;
+    <span class="k">while</span> (start &lt;= content.size()) {
+        std::size_t end = content.find(<span class="s">'\n'</span>, start);
+        <span class="k">if</span> (end == std::string::npos) { lines.emplace_back(content.substr(start)); <span class="k">break</span>; }
+        lines.emplace_back(content.substr(start, end - start)); start = end + 1;
+    }
+    <span class="k">return</span> lines;
+}
+<span class="k">static</span> std::string joinLines(<span class="k">const</span> std::vector&lt;std::string&gt;&amp; lines) {
+    std::string r; <span class="k">for</span> (std::size_t i = 0; i &lt; lines.size(); ++i) { r += lines[i]; <span class="k">if</span> (i + 1 &lt; lines.size()) r += <span class="s">'\n'</span>; }
+    <span class="k">return</span> r;
+}</code></pre>
+<p>Note the convention: a trailing <code>\n</code> yields an empty last element, and joining restores it. Follow it so your rule composes with <code>ln</code>, <code>drop</code> and <code>dup</code>.</p>
+
+<h2 id="lifecycle">Lifecycle &amp; guarantees</h2>
+<ul>
+<li><strong>One instance per (rule file, key).</strong> Two files using <code>indent</code> get two <code>IndentRule</code> objects with independent settings. Instances live as long as the server.</li>
+<li><strong>Single-threaded.</strong> The server handles requests one after another; <code>trigger()</code>/<code>format()</code> are never called concurrently. You may keep mutable state, but remember the same instance sees every wrapped command.</li>
+<li><strong>Never throw from <code>trigger()</code> or <code>format()</code>.</strong> There is no catch around the request loop: an exception ends the server process (systemd restarts it 2 s later and the client that was waiting falls back to plain output). Catch <code>std::regex_error</code> and friends yourself.</li>
+<li><strong>Loading is best-effort.</strong> Unloadable <code>.so</code> files and invalid <code>.cfg</code> files are skipped with a log line; make errors loud with <code>context-forge check local … -v debug</code>.</li>
+<li><strong>ABI.</strong> Your plugin and the server share vtables, <code>std::string</code> and <code>libconfig::Setting</code> across the <code>.so</code> boundary. Build with the same compiler (<code>clang++</code>), standard (C++20), standard library (libstdc++) and the headers of the exact server version you target.</li>
+</ul>
+
+<h2 id="walkthrough">Walkthrough: a rule plugin, step by step</h2>
+<p>We'll add <code>indent</code>, a rule that prefixes every line of a block with a string:</p>
+<pre data-title="rules/example.cfg"><code>trigger = { bin = ["ls"]; };
+indent = { by = "    "; skip_empty = true; };</code></pre>
+
+<ol class="steps">
+<li><strong>Declare the class</strong> — <code>include/forge/rules/rules/IndentRule.hpp</code>
+<pre data-title="include/forge/rules/rules/IndentRule.hpp"><code><span class="k">#ifndef</span> INDENTRULE_H
+    <span class="k">#define</span> INDENTRULE_H
+
+    <span class="k">#include</span> <span class="s">"IRule.hpp"</span>        <span class="c">// forge::rules::IRule</span>
+    <span class="k">#include</span> <span class="s">&lt;libconfig.h++&gt;</span>    <span class="c">// libconfig::Setting</span>
+    <span class="k">#include</span> <span class="s">&lt;string&gt;</span>           <span class="c">// std::string</span>
+
+<span class="k">namespace</span> forge::rules {
+
+<span class="k">class</span> IndentRule: <span class="k">public</span> forge::rules::IRule {
+    <span class="k">private</span>:
+        std::string _by = <span class="s">"    "</span>;
+        <span class="k">bool</span> _skipEmpty = <span class="k">false</span>;
+
+    <span class="k">public</span>:
+        <span class="k">void</span> load(<span class="k">const</span> libconfig::Setting&amp; s) <span class="k">final</span>;
+        <span class="k">void</span> format(<span class="k">const</span> std::string&amp; bin, std::string&amp; content) <span class="k">final</span>;
+
+        IndentRule&amp; <span class="k">operator</span>=(<span class="k">const</span> IndentRule&amp;) = <span class="k">delete</span>;
+        IndentRule&amp; <span class="k">operator</span>=(IndentRule&amp;&amp;) = <span class="k">delete</span>;
+        IndentRule(): IRule(<span class="s">"indent"</span>) {};
+        IndentRule(<span class="k">const</span> IndentRule&amp;) = <span class="k">delete</span>;
+        IndentRule(IndentRule&amp;&amp;) = <span class="k">delete</span>;
+        ~IndentRule() = <span class="k">default</span>;
+};
+
+}
+<span class="k">#endif</span></code></pre></li>
+
+<li><strong>Implement <code>load</code> and <code>format</code></strong> — <code>src/forge/rules/rules/indent/plugin.cpp</code>
+<pre data-title="src/forge/rules/rules/indent/plugin.cpp"><code><span class="k">#define</span> _Exception          <span class="c">// enable utils::exception::* (must precede the include)</span>
+<span class="k">#define</span> _Attribute          <span class="c">// enable _hot / _unlikely / _unused …</span>
+<span class="k">#include</span> <span class="s">&lt;utils/utils.hpp&gt;</span>
+<span class="k">#include</span> <span class="s">"forge/rules/rules/IndentRule.hpp"</span>
+<span class="k">#include</span> <span class="s">&lt;libconfig.h++&gt;</span>
+<span class="k">#include</span> <span class="s">&lt;string&gt;</span>
+
+<span class="k">void</span> forge::rules::IndentRule::load(<span class="k">const</span> libconfig::Setting&amp; s)
+{
+    <span class="k">if</span> (!s.isGroup()) _unlikely {
+        <span class="k">throw</span> utils::exception::ErrorException(utils::exception::ExternalCode::Rules,
+            s.getPath() + <span class="s">": indent must be a group { by = \"...\"; skip_empty = bool; }"</span>);
+    }
+    <span class="k">if</span> (s.exists(<span class="s">"by"</span>)) {
+        <span class="k">if</span> (s[<span class="s">"by"</span>].getType() != libconfig::Setting::TypeString) _unlikely {
+            <span class="k">throw</span> utils::exception::ErrorException(utils::exception::ExternalCode::Rules,
+                s[<span class="s">"by"</span>].getPath() + <span class="s">": the by value must be a string"</span>);
+        }
+        <span class="k">this</span>-&gt;_by = <span class="k">static_cast</span>&lt;<span class="k">const char</span>*&gt;(s[<span class="s">"by"</span>]);
+    }
+    <span class="k">if</span> (s.exists(<span class="s">"skip_empty"</span>)) {
+        <span class="k">if</span> (s[<span class="s">"skip_empty"</span>].getType() != libconfig::Setting::TypeBoolean) _unlikely {
+            <span class="k">throw</span> utils::exception::ErrorException(utils::exception::ExternalCode::Rules,
+                s[<span class="s">"skip_empty"</span>].getPath() + <span class="s">": the skip_empty value must be a boolean"</span>);
+        }
+        <span class="k">this</span>-&gt;_skipEmpty = <span class="k">static_cast</span>&lt;<span class="k">bool</span>&gt;(s[<span class="s">"skip_empty"</span>]);
+    }
+}
+
+_hot <span class="k">void</span> forge::rules::IndentRule::format(_unused <span class="k">const</span> std::string&amp; bin, std::string&amp; content)
+{
+    <span class="k">if</span> (<span class="k">this</span>-&gt;_by.empty()) <span class="k">return</span>;
+
+    std::string result;
+    result.reserve(content.size() + <span class="k">this</span>-&gt;_by.size() * 16);
+
+    std::size_t start = 0;
+    <span class="k">while</span> (start &lt;= content.size()) {
+        std::size_t end = content.find(<span class="s">'\n'</span>, start);
+        <span class="k">const bool</span> last = (end == std::string::npos);
+        <span class="k">const</span> std::size_t len = last ? content.size() - start : end - start;
+
+        <span class="k">if</span> (!(<span class="k">this</span>-&gt;_skipEmpty &amp;&amp; len == 0)) result += <span class="k">this</span>-&gt;_by;
+        result.append(content, start, len);
+        <span class="k">if</span> (last) <span class="k">break</span>;
+        result += <span class="s">'\n'</span>;
+        start = end + 1;
+    }
+    content = std::move(result);
+}</code></pre>
+<p>Notice: validation with a path in the message, no exceptions in <code>format</code>, work reserved up front, and <code>_unused</code> on <code>bin</code> because the project compiles with <code>-Wunused-parameter</code>.</p></li>
+
+<li><strong>Export the C entry points</strong> — <code>src/forge/rules/rules/indent/lib.cpp</code>
+<pre data-title="src/forge/rules/rules/indent/lib.cpp"><code><span class="k">#include</span> <span class="s">"forge/rules/rules/IRule.hpp"</span>
+<span class="k">#include</span> <span class="s">"forge/rules/rules/IndentRule.hpp"</span>
+
+<span class="k">extern</span> <span class="s">"C"</span> {
+    <span class="k">const char</span>* name(<span class="k">void</span>)             { <span class="k">return</span> <span class="s">"indent"</span>; }
+    forge::rules::IRule* factory(<span class="k">void</span>) { <span class="k">return new</span> forge::rules::IndentRule; }
+}</code></pre>
+<p><code>type()</code> comes from the shared <code>src/forge/rules/rules/lib.cpp</code> (<code>return TYPE_RULE;</code>) that CMake links into every rule plugin. For an out-of-tree build, add it to your own <code>lib.cpp</code> (see <a href="#out-of-tree">below</a>).</p></li>
+
+<li><strong>Register the target in <code>CMakeLists.txt</code></strong> (three edits, next to the existing rules):
+<pre data-title="CMakeLists.txt"><code><span class="c"># 1. sources</span>
+set(SRC_INDENT
+    src/forge/rules/rules/indent/plugin.cpp
+    src/forge/rules/rules/indent/lib.cpp
+)
+add_library(rule_indent SHARED ${SRC_PLUGINS} ${SRC_RULES} ${SRC_INDENT})
+
+<span class="c"># 2. output location (add rule_indent to the existing set_target_properties call for rules)</span>
+set_target_properties(
+    rule_ln rule_drop rule_dup rule_insert rule_replace
+    rule_indent
+    PROPERTIES PREFIX "" LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/plugins/rules
+)
+
+<span class="c"># 3. add it to the PLUGINS list so include dirs, link libraries, build modes and the `plugins` target apply</span>
+set(PLUGINS
+    trigger_default pre-rule_ansi
+    rule_ln rule_drop rule_dup rule_insert rule_replace
+    rule_indent
+)</code></pre></li>
+
+<li><strong>Build and validate</strong>
+<pre><code>cmake --build build --target rule_indent          <span class="c"># or: make</span>
+ls plugins/rules/                                 <span class="c"># → … rule_indent.so</span>
+mkdir -p /tmp/rules &amp;&amp; printf 'trigger = { bin = ["ls"]; };\nindent = { by = "  | "; };\n' &gt; /tmp/rules/indent.cfg
+context-forge check local -R -P ./plugins -r /tmp/rules -v debug</code></pre>
+<pre data-nocopy><code>… indent: plugin successfully loaded
+… loaded plugins: 8
+… loaded rules: 1</code></pre></li>
+
+<li><strong>Use it</strong>
+<pre><code>context-forge setup --copy --recursive --plugins ./plugins --rules /tmp/rules
+context-forge exec -c ls</code></pre>
+<pre data-nocopy><code>  | build
+  | CMakeLists.txt
+  | context-forge
+  | …</code></pre></li>
+</ol>
+
+<h2 id="trigger-example">Example: a trigger plugin</h2>
+<p>A trigger that fires when the output is longer than <em>n</em> bytes — useful to route only large outputs to a summarising rule set:</p>
+<pre data-title="rules: min_size = 2048;   (scalar setting)"><code><span class="c">// include/forge/rules/triggers/SizeTrigger.hpp</span>
+<span class="k">class</span> SizeTrigger: <span class="k">public</span> forge::rules::ITrigger {
+    std::size_t _min = 0;
+<span class="k">public</span>:
+    <span class="k">void</span> load(<span class="k">const</span> libconfig::Setting&amp; s) <span class="k">final</span>;
+    <span class="k">bool</span> trigger(<span class="k">const</span> std::string&amp; bin, <span class="k">const</span> std::string&amp; content) <span class="k">final</span>;
+    SizeTrigger(): ITrigger(<span class="s">"min_size"</span>) {};
+    <span class="c">/* deleted copy/move as usual */</span>
+};
+
+<span class="c">// src/forge/rules/triggers/size/plugin.cpp</span>
+<span class="k">void</span> forge::rules::SizeTrigger::load(<span class="k">const</span> libconfig::Setting&amp; s)
+{
+    <span class="k">if</span> (s.getType() != libconfig::Setting::TypeInt || <span class="k">static_cast</span>&lt;<span class="k">int</span>&gt;(s) &lt; 0) _unlikely {
+        <span class="k">throw</span> utils::exception::ErrorException(utils::exception::ExternalCode::Rules,
+            s.getPath() + <span class="s">": min_size must be a non-negative integer"</span>);
+    }
+    <span class="k">this</span>-&gt;_min = <span class="k">static_cast</span>&lt;std::size_t&gt;(<span class="k">static_cast</span>&lt;<span class="k">int</span>&gt;(s));
+}
+_hot _nodiscard <span class="k">bool</span> forge::rules::SizeTrigger::trigger(_unused <span class="k">const</span> std::string&amp; bin, <span class="k">const</span> std::string&amp; content)
+{
+    <span class="k">return</span> content.size() &gt;= <span class="k">this</span>-&gt;_min;
+}
+
+<span class="c">// src/forge/rules/triggers/size/lib.cpp</span>
+<span class="k">extern</span> <span class="s">"C"</span> {
+    <span class="k">const char</span>* name(<span class="k">void</span>)                { <span class="k">return</span> <span class="s">"min_size"</span>; }
+    forge::rules::ITrigger* factory(<span class="k">void</span>) { <span class="k">return new</span> forge::rules::SizeTrigger; }
+}
+<span class="c">// type() = TYPE_TRIGGER comes from src/forge/rules/triggers/lib.cpp</span></code></pre>
+<p>CMake: <code>add_library(trigger_size SHARED ${SRC_PLUGINS} ${SRC_TRIGGERS} ${SRC_SIZE})</code>, output directory <code>plugins/triggers</code>. Because triggers are OR-ed, a file with both <code>trigger = { bin = ["ls"]; }</code> and <code>min_size = 2048;</code> applies to <em>any</em> <code>ls</code> output <em>or</em> any large output. Put them in separate files if you want AND semantics — or write a trigger that takes both criteria.</p>
+
+<h2 id="prerule-example">Example: a pre-rule plugin</h2>
+<p>A pre-rule that expands tabs to spaces so that later column-based regexes are stable:</p>
+<pre data-title="rules: tabs = 4;"><code><span class="k">class</span> TabsPreRule: <span class="k">public</span> forge::rules::IPreRule {
+    <span class="k">int</span> _width = 4;
+<span class="k">public</span>:
+    <span class="k">void</span> load(<span class="k">const</span> libconfig::Setting&amp; s) <span class="k">final</span> {
+        <span class="k">if</span> (s.getType() != libconfig::Setting::TypeInt || <span class="k">static_cast</span>&lt;<span class="k">int</span>&gt;(s) &lt;= 0) _unlikely
+            <span class="k">throw</span> utils::exception::ErrorException(utils::exception::ExternalCode::Rules, s.getPath() + <span class="s">": tabs must be an integer &gt; 0"</span>);
+        <span class="k">this</span>-&gt;_width = <span class="k">static_cast</span>&lt;<span class="k">int</span>&gt;(s);
+    }
+    <span class="k">void</span> format(_unused <span class="k">const</span> std::string&amp; bin, std::string&amp; content) <span class="k">final</span> {
+        std::string out; out.reserve(content.size()); <span class="k">int</span> col = 0;
+        <span class="k">for</span> (<span class="k">char</span> c: content) {
+            <span class="k">if</span> (c == <span class="s">'\t'</span>) { <span class="k">int</span> n = <span class="k">this</span>-&gt;_width - (col % <span class="k">this</span>-&gt;_width); out.append(n, <span class="s">' '</span>); col += n; }
+            <span class="k">else</span> { out += c; col = (c == <span class="s">'\n'</span>) ? 0 : col + 1; }
+        }
+        content = std::move(out);
+    }
+    TabsPreRule(): IPreRule(<span class="s">"tabs"</span>) {};
+};
+<span class="c">// lib.cpp: name() → "tabs", factory() → new TabsPreRule; type() = TYPE_PRE_RULE from src/forge/rules/pre-rules/lib.cpp</span></code></pre>
+
+<h2 id="cmake">CMake wiring, explained</h2>
+<p>The relevant pieces of the root <code>CMakeLists.txt</code>:</p>
+<div class="table-wrap"><table>
+<tr><th>Variable / call</th><th>Role</th></tr>
+<tr><td><code>SRC_PLUGINS</code></td><td>Sources shared by <em>every</em> plugin (currently empty; reserved for common helpers).</td></tr>
+<tr><td><code>SRC_TRIGGERS</code> / <code>SRC_PRE_RULES</code> / <code>SRC_RULES</code></td><td>The per-kind <code>lib.cpp</code> providing <code>type()</code>.</td></tr>
+<tr><td><code>add_library(&lt;name&gt; SHARED …)</code></td><td>One per plugin. Naming convention: <code>trigger_*</code>, <code>pre-rule_*</code>, <code>rule_*</code>.</td></tr>
+<tr><td><code>PREFIX ""</code> + <code>LIBRARY_OUTPUT_DIRECTORY</code></td><td>Drops the <code>lib</code> prefix and places the file under <code>plugins/&lt;kind&gt;/</code> in the source tree.</td></tr>
+<tr><td><code>PLUGINS</code> list</td><td>Every target in it gets the include dirs (<code>include</code>, <code>include/exception</code>), the link libraries (<code>libconfig++</code>, <code>httplib</code>, <code>utils</code>), the Debug/Asan/Optimized flags, a dependency on the generated exception header, and membership of the aggregate <code>plugins</code> target.</td></tr>
+<tr><td><code>tests/CMakeLists.txt → SRC_FORGE_PLUGINS</code></td><td>Add your <code>plugin.cpp</code> here to unit-test the class directly (do <em>not</em> add <code>lib.cpp</code>: several plugins define the same C symbols).</td></tr>
+</table></div>
+<p>Everything is compiled with <code>-fPIC</code> (<code>CMAKE_POSITION_INDEPENDENT_CODE ON</code>) and the warning set <code>-Wall -Wextra -Wpedantic -Wshadow -Wunused-parameter</code>. Keep your plugin warning-free; CI builds fail otherwise.</p>
+
+<h2 id="out-of-tree">Out-of-tree plugins</h2>
+<p>You do not have to fork the repository. The headers under <code>include/forge/rules/</code> plus libutils and libconfig++ are all a plugin needs. Minimal standalone project:</p>
+<pre data-nocopy><code>my-plugin/
+├── CMakeLists.txt
+├── IndentRule.hpp
+├── plugin.cpp
+└── lib.cpp        ← contains type(), name() and factory()</code></pre>
+<pre data-title="my-plugin/CMakeLists.txt"><code>cmake_minimum_required(VERSION 3.20)
+project(cf-indent LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_COMPILER clang++)                 <span class="c"># same toolchain as the server</span>
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+set(CONTEXT_FORGE_SRC "" CACHE PATH "Path to a context-forge checkout (for its headers)")
+find_package(utils 2.13.22 CONFIG REQUIRED)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LIBCONFIGXX REQUIRED IMPORTED_TARGET libconfig++)
+
+add_library(rule_indent SHARED plugin.cpp lib.cpp)
+set_target_properties(rule_indent PROPERTIES PREFIX "")
+target_include_directories(rule_indent PRIVATE ${CONTEXT_FORGE_SRC}/include ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(rule_indent PRIVATE PkgConfig::LIBCONFIGXX utils::utils)
+target_compile_options(rule_indent PRIVATE -Wall -Wextra -Wpedantic -Wshadow)</code></pre>
+<pre data-title="my-plugin/lib.cpp"><code><span class="k">#include</span> <span class="s">"forge/rules/rules/IRule.hpp"</span>
+<span class="k">#include</span> <span class="s">"IndentRule.hpp"</span>
+
+<span class="k">extern</span> <span class="s">"C"</span> {
+    <span class="k">int</span>         type(<span class="k">void</span>)    { <span class="k">return</span> 2; }               <span class="c">// TYPE_RULE; or #include "forge/Forge.hpp" for the macro</span>
+    <span class="k">const char</span>* name(<span class="k">void</span>)    { <span class="k">return</span> <span class="s">"indent"</span>; }
+    forge::rules::IRule* factory(<span class="k">void</span>) { <span class="k">return new</span> forge::rules::IndentRule; }
+}</code></pre>
+<pre><code>cmake -S . -B build -DCONTEXT_FORGE_SRC=~/src/context-forge
+cmake --build build
+cp build/rule_indent.so ~/.config/context-forge/plugins/rules/    <span class="c"># or any directory you pass with --plugins</span>
+context-forge check dist -v debug &amp;&amp; context-forge restart</code></pre>
+<p>Including <code>forge/Forge.hpp</code> for the <code>TYPE_*</code> macros pulls in <code>httplib.h</code> and <code>Ollama.hpp</code>; returning the literal keeps the plugin's dependencies to libutils and libconfig++. The values are part of the ABI and will not change without a major version bump.</p>
+
+<h2 id="testing">Testing</h2>
+<p>The repository's tests (<code>-DBUILD_TESTS=ON</code>, GoogleTest, <code>ctest</code> in <code>build/</code>) compile the plugin classes straight into <code>unit_tests</code>, which means you can test <code>load()</code> and <code>format()</code> without any <code>dlopen</code>. Parse a config from a string and drive the object:</p>
+<pre data-title="tests/rules/IndentRule.cpp"><code><span class="k">#define</span> _Exception
+<span class="k">#include</span> <span class="s">&lt;utils/utils.hpp&gt;</span>
+<span class="k">#include</span> <span class="s">"forge/rules/rules/IndentRule.hpp"</span>
+<span class="k">#include</span> <span class="s">&lt;gtest/gtest.h&gt;</span>
+<span class="k">#include</span> <span class="s">&lt;libconfig.h++&gt;</span>
+
+TEST(IndentRule, PrefixesEveryLine) {
+    libconfig::Config cfg;
+    ASSERT_NO_THROW(cfg.readString(<span class="s">"indent = { by = \"&gt; \"; };"</span>));
+    forge::rules::IndentRule rule;
+    ASSERT_NO_THROW(rule.load(cfg.getRoot()[<span class="s">"indent"</span>]));
+
+    std::string content = <span class="s">"a\nb\n"</span>;
+    rule.format(<span class="s">"ls"</span>, content);
+    EXPECT_EQ(content, <span class="s">"&gt; a\n&gt; b\n&gt; "</span>);   <span class="c">// trailing newline → empty last line, also prefixed unless skip_empty</span>
+}
+
+TEST(IndentRule, RejectsNonString) {
+    libconfig::Config cfg;
+    cfg.readString(<span class="s">"indent = { by = 4; };"</span>);
+    forge::rules::IndentRule rule;
+    <span class="k">try</span> { rule.load(cfg.getRoot()[<span class="s">"indent"</span>]); FAIL() &lt;&lt; <span class="s">"expected a throw"</span>; }
+    <span class="k">catch</span> (<span class="k">const</span> utils::exception::IException&amp; e) {
+        EXPECT_EQ(e.getType(), utils::exception::Type::Error);
+        EXPECT_EQ(e.getCode(), <span class="k">static_cast</span>&lt;utils::exception::InternalCode&gt;(utils::exception::ExternalCode::Rules));
+    }
+}</code></pre>
+<p>Then in <code>tests/CMakeLists.txt</code> add <code>${CMAKE_SOURCE_DIR}/src/forge/rules/rules/indent/plugin.cpp</code> to <code>SRC_FORGE_PLUGINS</code> and <code>rules/IndentRule.cpp</code> to <code>SRC</code>. The existing suites are good templates: <code>tests/rules/Rules.cpp</code> shows parameterised valid/invalid config cases, and <code>tests/tools/MockInstruction.hpp</code> provides <code>MockTrigger</code>/<code>MockPreRule</code>/<code>MockRule</code> if you need to test how your rule composes inside a <code>Rules</code> object.</p>
+<p>For an end-to-end check of the C interface, <code>context-forge check local -P &lt;dir&gt; -r &lt;dir&gt; -v debug</code> is the fastest tool; the test binary also receives <code>TESTS_PLUGINS_DIR</code> (the built <code>plugins/</code> directory) for tests that want to <code>dlopen</code> the real objects through <code>utils::encapsulation::SharedObject</code>.</p>
+
+<h2 id="libutils">libutils cheat-sheet</h2>
+<p>Everything the plugins use from <a href="https://github.com/TsukiNi22/libutils">libutils</a> is opt-in: define the module macro <em>before</em> including <code>&lt;utils/utils.hpp&gt;</code>.</p>
+<div class="table-wrap"><table>
+<tr><th>Define</th><th>Gives you</th></tr>
+<tr><td><code>#define _Attribute</code></td><td><code>_hot</code>, <code>_cold</code>, <code>_nodiscard</code>, <code>_unused</code>, <code>_hidden</code>, <code>_likely</code>/<code>_unlikely</code> (used after an <code>if (…)</code>), <code>_fallthrough</code>.</td></tr>
+<tr><td><code>#define _Exception</code></td><td><code>utils::exception::ErrorException</code>, <code>FatalException</code>, <code>IException</code> and the generated <code>ExternalCode</code> enum: <code>UnknownMode</code>, <code>MissingBinary</code>, <code>InvalidDirectory</code>, <code>Plugins</code>, <code>Rules</code>, <code>Ollama</code> (from <code>cmake/config/exceptions/global.json</code>). Use <code>Rules</code> in <code>load()</code>.</td></tr>
+<tr><td><code>#define _Verbose</code></td><td><code>onBasicVerbose(expr)</code>, <code>onAdvancedVerbose(expr)</code>, <code>onDebugVerbose(expr)</code> (stream-style: <code>onDebugVerbose("n=" &lt;&lt; n)</code>), and the <code>…C(std::cerr, …)</code> variants. Respect the server's <code>--verbose</code> level, so use them freely in plugins for diagnostics.</td></tr>
+<tr><td><code>#define _IOManip</code></td><td><code>utils::iomanip::Char::ESC/BEL/DLE</code> constants, colours (<code>color_rgb</code>), <code>strong()</code>, <code>reset()</code>.</td></tr>
+</table></div>
+
+<h2 id="internals">Server internals worth knowing</h2>
+<h3>Request flow (<code>Forge-Server.cpp</code>, <code>Forge-Client.cpp</code>)</h3>
+<ul>
+<li>The server creates a POSIX shared-memory segment named <code>context-forge:&lt;server pid&gt;</code> with <strong>10 channels × 4096 bytes</strong> (<code>CHANNEL_NUMBER</code>, <code>CHANNEL_SIZE</code> in <code>Forge.hpp</code>). Each chunk carries a 4-byte index header; messages larger than one channel are split and reassembled by index on both sides.</li>
+<li>The client payload is <code>bin</code> + <code>DLE</code> (0x10) + captured text. The server splits on the <em>first</em> <code>DLE</code>; since <code>bin</code> is a program name and comes first, a <code>DLE</code> byte inside the captured output is left untouched.</li>
+<li><code>formatCFG</code> runs every loaded <code>Rules</code> in order (trigger, then apply), <code>formatLLM</code> runs afterwards if enabled. Plugins therefore see already-transformed text when several files match.</li>
+</ul>
+<h3>Loading (<code>Forge-Loading.cpp</code>)</h3>
+<ul>
+<li>Plugins are loaded only if a <code>--rules</code> directory was given; <code>--plugins</code> without <code>--rules</code> is ignored.</li>
+<li>Directory iteration order is the filesystem's. Recursive mode uses <code>std::filesystem::recursive_directory_iterator</code>.</li>
+<li>A <code>Rules</code> object keeps its source path (<code>Rules::path()</code>), which the server logs at <code>-v advanced</code> when the file applies — handy to see which file did what.</li>
+</ul>
+<h3>Exit / restart semantics</h3>
+<ul>
+<li>The systemd unit uses <code>Restart=always</code>, <code>RestartSec=2</code>. A plugin crash costs one request (the client falls back) and two seconds.</li>
+<li><code>Ollama::~Ollama</code> cancels the keep-alive scheduler; the model unloads on Ollama's side after its own <code>keep_alive</code> window.</li>
+</ul>
+
+<h2 id="checklist">Checklist before shipping a plugin</h2>
+<ul>
+<li>☐ <code>type()</code>, <code>name()</code>, <code>factory()</code> are <code>extern "C"</code>; <code>factory()</code>'s return type matches <code>type()</code>.</li>
+<li>☐ <code>name()</code> is unique, not <code>enable</code>/<code>block</code>, and equals the string passed to the base constructor.</li>
+<li>☐ <code>load()</code> validates every setting's type and throws <code>ErrorException(ExternalCode::Rules, path + ": …")</code>.</li>
+<li>☐ <code>trigger()</code>/<code>format()</code> never throw and never block (no I/O, no network).</li>
+<li>☐ Regexes compiled in <code>load()</code>, not per call.</li>
+<li>☐ Line handling keeps the trailing-newline convention (empty last element).</li>
+<li>☐ Built with <code>clang++</code>, C++20, <code>-fPIC</code>, warning-free, against the headers of the server version in use.</li>
+<li>☐ <code>context-forge check local -R -P … -r … -v debug</code> reports the plugin loaded and your sample <code>.cfg</code> accepted.</li>
+<li>☐ Unit tests for valid/invalid configs and for the transformation, added to <code>tests/CMakeLists.txt</code>.</li>
+</ul>
+
+<div class="pager">
+  <a href="rules.html"><span>Previous</span>Rule files</a>
+  <a class="next" href="graph.html"><span>Next</span>Architecture graph</a>
+</div>
+
+</main>
+</div>
+<footer class="site">context-forge documentation · generated from the <a href="https://github.com/TsukiNi22/context-forge">TsukiNi22/context-forge</a> repository (v1.0.0, MIT) · not affiliated with Ollama.</footer>
+<script src="assets/site.js"></script>
+
+</body>
+</html>

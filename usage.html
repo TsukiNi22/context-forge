@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Command reference · context-forge docs</title>
+<meta name="description" content="Every context-forge sub-command, flag and environment variable, the exec/server workflow and troubleshooting.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M4 22h24l-3 5H7z' fill='%23b5471f'/%3E%3Cpath d='M8 12h20v6H12l-4 4z' fill='%23b5471f'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+<script>try{var t=localStorage.getItem('cf-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+
+</head>
+<body>
+<header class="topbar">
+  <button class="icon-btn menu-btn" aria-label="Open navigation"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+  <a class="brand" href="index.html"><svg class="logo" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M4 22h24l-3 5H7l-3-5Z" fill="currentColor" opacity=".85"/><path d="M8 12h20v6H12l-4 4v-10Z" fill="currentColor"/><path d="M8 12V8h6v4" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><circle cx="22" cy="6" r="1.6" fill="#e8734a"/><circle cx="26.5" cy="9" r="1.1" fill="#e8734a"/></svg><span>context-forge</span><span class="ver">v1.0.0</span></a>
+  <nav class="topnav">
+<a href="index.html">Overview</a>
+<a href="install.html" class="active">User guide</a>
+<a href="plugins.html">Plugin development</a>
+<a href="graph.html">Architecture graph</a>
+  </nav>
+  <a class="icon-btn" href="https://github.com/TsukiNi22/context-forge" title="GitHub repository" aria-label="GitHub repository"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></a>
+  <button class="icon-btn" data-theme-toggle title="Toggle light/dark theme" aria-label="Toggle theme"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
+</header>
+<div class="shell">
+<aside class="sidebar">
+<h4>User guide</h4>
+<a href="install.html">Installation & setup</a>
+<a href="usage.html" class="active">Command reference</a>
+<div class="sub"><a href="#synopsis">Synopsis</a><a href="#exec">exec</a><a href="#server">server / check</a><a href="#lifecycle">setup … remove</a><a href="#ollama-cmds">install-ollama · pull</a><a href="#flags">Flags</a><a href="#env">Environment variables</a><a href="#pipeline">What happens on exec</a><a href="#recipes">Recipes</a><a href="#troubleshooting">Troubleshooting</a></div>
+<a href="rules.html">Rule files</a>
+<h4>Developer guide</h4>
+<a href="plugins.html">Plugin development</a>
+<a href="graph.html">Architecture graph</a>
+</aside>
+<main class="content">
+
+<div class="page-eyebrow">User guide</div>
+<h1>Command reference</h1>
+<p class="lead">One binary, eleven sub-commands. The first positional word selects the mode; flags accept a short form (<code>-c</code>), a one-dash long form (<code>-cmd</code>) and a GNU form (<code>--command</code>).</p>
+
+<div class="toc"><strong>On this page</strong>
+<a href="#synopsis">Synopsis</a>
+<a href="#exec">exec</a>
+<a href="#server">server / check</a>
+<a href="#lifecycle">setup · start · stop · restart · status · remove</a>
+<a href="#ollama-cmds">install-ollama · pull</a>
+<a href="#flags">Flags</a>
+<a href="#env">Environment variables</a>
+<a href="#pipeline">What happens on exec</a>
+<a href="#recipes">Recipes</a>
+<a href="#troubleshooting">Troubleshooting</a>
+</div>
+
+<h2 id="synopsis">Synopsis</h2>
+<pre data-nocopy><code>context-forge -h | --help
+context-forge exec    [-v LEVEL] [-d FD] [-n] -c BIN [ARG...]
+context-forge server  [-P DIR] [-r DIR] [-R] [-s FILE] [-a IP] [-p PORT] [-m MODEL] [-v LEVEL]
+context-forge check   local [same flags as server]
+context-forge check   dist  [-a IP] [-p PORT] [-m MODEL] [-v LEVEL]
+context-forge setup   [-C] [same flags as server]
+context-forge start | stop | restart | remove | install-ollama   [-v LEVEL]
+context-forge status  [-a IP] [-p PORT]
+context-forge pull    MODEL</code></pre>
+<p>Every mode accepts <code>-h</code>/<code>--help</code>, which prints the usages the argument parser knows for that mode.</p>
+
+<h2 id="exec">exec — wrap a command</h2>
+<pre><code>context-forge exec [-v LEVEL] [-d FD] [-n] -c BIN [ARG...]</code></pre>
+<p>Spawns <code>BIN ARG...</code>, captures the file descriptor selected by <code>-d</code> (default <code>1</code>, stdout) through a pipe, hands the captured text to the server, and writes the server's answer to that same descriptor once the child has exited. Everything after <code>-c BIN</code> belongs to the wrapped program, so put context-forge's own flags <em>before</em> <code>-c</code>.</p>
+<div class="table-wrap"><table>
+<tr><th>Flag</th><th>Value</th><th>Meaning</th></tr>
+<tr><td><code>-c</code>, <code>-cmd</code>, <code>--command</code></td><td><code>BIN [ARG...]</code></td><td>Required. The program to run and its arguments. <code>BIN</code> is resolved on <code>PATH</code> like a shell would.</td></tr>
+<tr><td><code>-d</code>, <code>-fd</code>, <code>--redirect</code></td><td><code>0 | 1 | 2 | n</code></td><td>Which descriptor of the child to capture and rewrite. Must be an open descriptor of the calling process. Default: <code>1</code> (stdout). Use <code>2</code> to reformat stderr only.</td></tr>
+<tr><td><code>-n</code>, <code>-!nl</code>, <code>--no-nl</code></td><td>—</td><td>Do not append a trailing newline to the formatted output when it lacks one.</td></tr>
+<tr><td><code>-v</code>, <code>--verbose</code></td><td><code>none | basic | advanced | debug</code></td><td>Client-side logging on stderr. <code>advanced</code> shows the raw and formatted blocks; <code>debug</code> adds the IPC steps.</td></tr>
+</table></div>
+<p><strong>Exit status</strong> is the wrapped program's: its exit code, or its signal number if it was killed. Descriptors that are not captured are inherited as-is, so <code>exec -c make</code> still streams stderr live while stdout is buffered for formatting.</p>
+<div class="callout note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><div><p><strong>Output is buffered, not streamed.</strong> The captured descriptor is read to the end before anything is printed. Interactive or long-running programs (editors, <code>tail -f</code>, servers) are not good candidates for wrapping.</p></div></div>
+<p><strong>Failsafe:</strong> if the systemd unit is missing, stopped or crashed, <code>exec</code> prints <code>[FALLBACK]</code> on stderr (unless <code>-v none</code>) and <em>replaces itself</em> with the plain command. A wrapped command therefore always runs.</p>
+
+<h2 id="server">server / check — run or validate the daemon</h2>
+<pre><code>context-forge server [-P DIR] [-r DIR] [-R] [-s FILE] [-a IP] [-p PORT] [-m MODEL] [-v LEVEL]</code></pre>
+<p>Loads plugins, then rule files, then the Ollama client, creates the shared-memory channel and loops forever answering clients. You rarely run it by hand — <code>setup</code> generates a unit that does — but it is handy in a terminal with <code>-v debug</code> while writing rules:</p>
+<pre><code>context-forge stop      <span class="c"># free the unit first: the client always talks to the systemd unit's PID</span>
+context-forge server -R -P ./plugins -r ./rules -v debug</code></pre>
+<div class="callout warn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg><div><p>Clients locate the server through <code>systemctl --user show context-forge.service -p MainPID</code>. A server started manually in a terminal is <em>not</em> found by <code>exec</code>; it is only useful to watch the loading logs. For an end-to-end test, use <code>setup</code> (or edit the unit) and read <code>journalctl --user -fu context-forge</code>.</p></div></div>
+<p><code>check</code> performs the load phase and exits, reporting each plugin/rule/LLM problem instead of ignoring it:</p>
+<pre><code>context-forge check local -R -P ./plugins -r ./rules -s ./system-prompt -v debug   <span class="c"># validate given paths</span>
+context-forge check dist -v debug                                                   <span class="c"># validate ~/.config/context-forge/* (after setup --copy)</span></code></pre>
+
+<h2 id="lifecycle">setup · start · stop · restart · status · remove</h2>
+<div class="table-wrap"><table>
+<tr><th>Command</th><th>What it does</th></tr>
+<tr><td><code>setup [-C] [server flags]</code></td><td>Writes <code>~/.config/systemd/user/context-forge.service</code> with <code>ExecStart=&lt;binary&gt; server &lt;flags&gt;</code>, then <code>daemon-reload</code>, <code>enable</code>, <code>restart</code>. With <code>-C</code>/<code>--copy</code>, first clones plugins, rules and system prompt under <code>~/.config/context-forge/</code> and points the unit at the copies. Paths are made absolute. See <a href="install.html#daemon">Register the daemon</a>.</td></tr>
+<tr><td><code>start</code> / <code>stop</code> / <code>restart</code></td><td>Thin wrappers over <code>systemctl --user start|stop|restart context-forge.service</code>. Restart after editing rule files: they are read once at start-up.</td></tr>
+<tr><td><code>status [-a IP] [-p PORT]</code></td><td>Prints two lines: the unit state (<em>not installed / running / stopped / crashed / starting / stopping</em>) and whether the <code>ollama</code> binary is installed and its HTTP API answers at <code>IP:PORT</code> (default <code>localhost:11434</code>, probed with <code>curl</code>).</td></tr>
+<tr><td><code>remove</code></td><td>Stops and disables the unit, deletes the unit file, reloads systemd, and deletes <code>~/.config/context-forge/</code> entirely. Does not uninstall the binary.</td></tr>
+</table></div>
+
+<h2 id="ollama-cmds">install-ollama · pull</h2>
+<div class="table-wrap"><table>
+<tr><th>Command</th><th>What it does</th></tr>
+<tr><td><code>sudo context-forge install-ollama</code></td><td>Runs <code>curl -fsSL https://ollama.com/install.sh | sh</code>. Refuses to run unless effective UID is 0.</td></tr>
+<tr><td><code>context-forge pull MODEL</code></td><td>Replaces itself with <code>ollama pull MODEL</code>. Requires Ollama to be installed and (for pulling) its server reachable.</td></tr>
+</table></div>
+
+<h2 id="flags">Flags shared by <code>server</code>, <code>check</code> and <code>setup</code></h2>
+<div class="table-wrap"><table>
+<tr><th>Flag</th><th>Value</th><th>Meaning</th><th>Default</th></tr>
+<tr><td><code>-P</code>, <code>-so</code>, <code>--plugins</code></td><td>directory</td><td>Where to look for <code>*.so</code> plugins. Must exist.</td><td>none → rules are ignored</td></tr>
+<tr><td><code>-r</code>, <code>-rules</code>, <code>--rules</code></td><td>directory</td><td>Where to look for <code>*.cfg</code> rule files. Must exist. Without it the whole rule stage is skipped (and plugins are not loaded either).</td><td>none</td></tr>
+<tr><td><code>-R</code>, <code>-rec</code>, <code>--recursive</code></td><td>—</td><td>Descend into sub-directories of both directories above. The shipped layout <code>plugins/{triggers,pre-rules,rules}/</code> needs it.</td><td>off</td></tr>
+<tr><td><code>-s</code>, <code>--system-prompt</code></td><td>file</td><td>Text file sent as the <code>system</code> field to Ollama. Enables the LLM pass.</td><td>none → LLM pass off</td></tr>
+<tr><td><code>-a</code>, <code>-ip</code>, <code>--ip</code></td><td>host/IP</td><td>Ollama host (resolved at start-up).</td><td><code>localhost</code></td></tr>
+<tr><td><code>-p</code>, <code>-port</code>, <code>--port</code></td><td>1–65535</td><td>Ollama port.</td><td><code>11434</code></td></tr>
+<tr><td><code>-m</code>, <code>-model</code>, <code>--model</code></td><td>name[:tag]</td><td>Model name; verified with <code>/api/show</code> at start-up.</td><td><code>qwen2.5-coder:1.5b</code></td></tr>
+<tr><td><code>-v</code>, <code>--verbose</code></td><td><code>none|basic|advanced|debug</code></td><td>Log level on stdout/stderr (journal for the unit).</td><td><code>basic</code></td></tr>
+<tr><td><code>-C</code>, <code>-cp</code>, <code>--copy</code> <span class="muted">(setup only)</span></td><td>—</td><td>Clone resources into <code>~/.config/context-forge/</code>.</td><td>off</td></tr>
+</table></div>
+
+<h2 id="env">Environment variables</h2>
+<p>The argument parser declares an environment fallback for some flags. They are useful in the generated unit (add <code>Environment=</code> lines) or in CI:</p>
+<div class="table-wrap"><table>
+<tr><th>Variable</th><th>Equivalent flag</th></tr>
+<tr><td><code>CONTEXT_FORGE_HOST_IPV4</code></td><td><code>--ip</code></td></tr>
+<tr><td><code>CONTEXT_FORGE_HOST_PORT</code></td><td><code>--port</code></td></tr>
+<tr><td><code>CONTEXT_FORGE_MODEL</code></td><td><code>--model</code></td></tr>
+<tr><td><code>CONTEXT_FORGE_SYSTEM_PROMPT</code></td><td><code>--system-prompt</code></td></tr>
+<tr><td><code>VERBOSE</code></td><td><code>--verbose</code></td></tr>
+</table></div>
+<p>An explicit flag always wins over the variable.</p>
+
+<h2 id="pipeline">What happens on <code>exec</code></h2>
+<div class="flow">
+  <span class="box">exec -c ls -la</span><span class="arr">→</span>
+  <span class="box">spawn child, capture fd</span><span class="arr">→</span>
+  <span class="box">child exits</span><span class="arr">→</span>
+  <span class="box">shm: "ls" + output</span><span class="arr">→</span>
+  <span class="box">server: rule files</span><span class="arr">→</span>
+  <span class="box">server: LLM</span><span class="arr">→</span>
+  <span class="box">shm: result</span><span class="arr">→</span>
+  <span class="box">write to fd, exit like child</span>
+</div>
+<ol>
+<li>The client asks systemd for the unit's main PID and opens the POSIX shared-memory segment named <code>context-forge:&lt;pid&gt;</code> (created by the server: 10 channels of 4 KiB; larger payloads are chunked and reassembled).</li>
+<li>The payload is <code>bin</code> + a <code>DLE</code> byte (<code>0x10</code>) + the captured text. <code>bin</code> is exactly the <code>BIN</code> word you passed — <code>ls</code>, not <code>/usr/bin/ls</code> — and is what <a href="rules.html#trigger">triggers</a> compare against.</li>
+<li>For each loaded rule file, in load order: if its triggers accept (bin, content), the file's block/pre-rules/rules are applied to the content, and the result feeds the next file.</li>
+<li>If the LLM pass is active, the text is sent to Ollama and replaced by the model's response.</li>
+<li>The client writes the answer to the captured descriptor (adding a final newline unless <code>-n</code>) and exits with the child's status.</li>
+</ol>
+
+<h2 id="recipes">Recipes</h2>
+<h3>Alias a command for good</h3>
+<pre data-title="~/.zshrc or ~/.bashrc"><code>alias ls='context-forge exec -c ls'
+alias grep='context-forge exec -c grep'</code></pre>
+<p>Because of the fallback, the aliases keep working when the daemon is down. Note that with an alias, <code>bin</code> seen by triggers is still <code>ls</code>.</p>
+<h3>Reformat only stderr</h3>
+<pre><code>context-forge exec -d 2 -c clang++ -Wall main.cpp</code></pre>
+<h3>Wrap a build tool's summary</h3>
+<pre data-title="rules/make.cfg"><code>trigger = { bin = ["make", "ninja"]; };
+ansi = false;
+drop = ["^\\s*$", "^make\\[\\d+\\]: (Entering|Leaving) directory"];
+ln = { tail = 40; };</code></pre>
+<h3>Ask the model for a summary of the whole output only</h3>
+<p>Give the server a system prompt and <em>no</em> rules directory. Everything you wrap goes straight to the model.</p>
+
+<h2 id="troubleshooting">Troubleshooting</h2>
+<div class="table-wrap"><table>
+<tr><th>Symptom</th><th>Cause / fix</th></tr>
+<tr><td><code>[FALLBACK] context-forge: server is unavailable…</code></td><td>The unit is not running. <code>context-forge status</code>, then <code>journalctl --user -u context-forge -n 50</code>. Common causes: the binary path baked into the unit no longer exists; a rule/plugin directory was deleted (the server logs it and continues without rules).</td></tr>
+<tr><td><code>Missing binary, can't find it using known path</code> on <code>setup</code></td><td>The executable is neither in <code>/usr/local/bin</code> nor <code>/usr/bin</code>. Install it or add a symlink.</td></tr>
+<tr><td><code>[WARNING] loadPlugin: no valid plugins where found</code></td><td>The plugins directory holds no <code>*.so</code> at the top level. Add <code>--recursive</code> for the <code>plugins/{triggers,pre-rules,rules}/</code> layout, or check that the packages-only install is complemented by a source build.</td></tr>
+<tr><td><code>Unknow plugin used: foo</code></td><td>A rule file uses key <code>foo</code> but no loaded plugin reports <code>name() == "foo"</code>. That rule file is skipped entirely; others still load.</td></tr>
+<tr><td><code>Parse error at file:line</code></td><td>libconfig syntax: every setting ends with <code>;</code>, strings are double-quoted, arrays use <code>[ ]</code>, groups use <code>{ }</code>. See <a href="rules.html">Rule files</a>.</td></tr>
+<tr><td><code>[FAILED] loadLLM: the llm formating part will be ignored until a valid restart</code></td><td>No <code>--system-prompt</code>, the file is missing, Ollama is unreachable, or the model is not pulled (<code>context-forge pull MODEL</code>). Rules still work.</td></tr>
+<tr><td>Output suddenly contains <code>&lt;binary&gt;…&lt;/binary&gt;</code> and <code>&lt;output&gt;</code> tags</td><td>The LLM pass was active but the request failed at run time (Ollama stopped, timeout &gt; 120 s); the server returns the prompt it built. Restart Ollama, or restart the unit without a system prompt.</td></tr>
+<tr><td>Rules edited but nothing changes</td><td>Rule files and plugins are read once at start-up: <code>context-forge restart</code>. With <code>setup --copy</code>, re-run <code>setup</code> so the copies are refreshed.</td></tr>
+<tr><td>Tab completion does nothing</td><td>See <a href="install.html#completion">Shell completion</a>: the directory is probably not in <code>$fpath</code>, or <code>compinit</code>/bash-completion is not loaded.</td></tr>
+<tr><td>Wrapped command hangs</td><td>It waits on stdin or never closes the captured descriptor (daemonising children keep the pipe open). Don't wrap interactive programs.</td></tr>
+</table></div>
+
+<div class="pager">
+  <a href="install.html"><span>Previous</span>Installation &amp; setup</a>
+  <a class="next" href="rules.html"><span>Next</span>Rule files</a>
+</div>
+
+</main>
+</div>
+<footer class="site">context-forge documentation · generated from the <a href="https://github.com/TsukiNi22/context-forge">TsukiNi22/context-forge</a> repository (v1.0.0, MIT) · not affiliated with Ollama.</footer>
+<script src="assets/site.js"></script>
+
+</body>
+</html>
