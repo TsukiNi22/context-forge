@@ -1,15 +1,15 @@
 Package: context-forge
 Version: 1.0.0-1
 Maintainer: TsukiNi22
-Installed-Size: 1548
+Installed-Size: 1549
 Conflicts: context-forge-pre
 Breaks: context-forge-pre
 Replaces: context-forge-pre (<= 1.0.0)
 Filename: pool/main/context-forge-1.0.0-Linux.deb
-Size: 533296
-MD5sum: d38465cda2f69341a60a13d5f613b643
-SHA1: 1c40f68b54e2e61368ee9d57e3ae1215a34afc60
-SHA256: e59184183eb2a7be6ca88f35aec8cdcb3af96a8fd40f6661561e3c472683c8af
+Size: 534154
+MD5sum: 9cb86376b203794a1730379ce857998a
+SHA1: 37e53c26fb198d6e074bdcab310d016231afdcc5
+SHA256: d6f2d9a367d68f9ce5a21e2557af63a0496aa90dcac045a3cd7f27b584dbe0c7
 Section: devel
 Priority: optional
 Homepage: https://github.com/TsukiNi22/context-forge
