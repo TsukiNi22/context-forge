@@ -1,6 +1,6 @@
 # context-forge — static documentation site
 
-Static, dependency-free documentation for [TsukiNi22/context-forge](https://github.com/TsukiNi22/context-forge) (v1.0.0).
+Static, dependency-free documentation for [TsukiNi22/context-forge](https://tsukini22.github.io/context-forge) (v1.0.0).
 
 ## Pages
 
