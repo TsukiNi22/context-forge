@@ -6,10 +6,10 @@ Conflicts: context-forge-pre
 Breaks: context-forge-pre
 Replaces: context-forge-pre (<= 1.0.0)
 Filename: pool/main/context-forge-1.0.0-Linux.deb
-Size: 528066
-MD5sum: c5a8bc6efb1267aeac0ac996e74500e4
-SHA1: d977f2637b18696a43d19041b4d647f507b8a91f
-SHA256: a30bf778dee839ec2f3e614c13ceaa7fc6411013ee3cb62428e7e546ddd484c5
+Size: 533296
+MD5sum: d38465cda2f69341a60a13d5f613b643
+SHA1: 1c40f68b54e2e61368ee9d57e3ae1215a34afc60
+SHA256: e59184183eb2a7be6ca88f35aec8cdcb3af96a8fd40f6661561e3c472683c8af
 Section: devel
 Priority: optional
 Homepage: https://github.com/TsukiNi22/context-forge
