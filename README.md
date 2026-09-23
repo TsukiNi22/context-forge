@@ -1,10 +1,10 @@
 # context-forge
 
+> [!TIP]
+> Static, dependency-free documentation [TsukiNi22/context-forge](https://tsukini22.github.io/context-forge) (v1.0.0).
+
 A C++20 wrapper to forge the output of a command into what you really want: `context-forge exec -c <command>` runs the command, sends its output to a local server (systemd user daemon) which applies your **rules** (`.cfg` + plugins) and optionally an **ollama** model, then prints the forged result.
 If the server is not available, the command is executed as it is (fallback), nothing is lost.
-
-> [!NOTE]
-> Static, dependency-free documentation >[TsukiNi22/context-forge](https://tsukini22.github.io/context-forge)< (v1.0.0).
 
 ### Table of Contents
  - [Dependencies](#dependencies)
