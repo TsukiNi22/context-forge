@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 
 Edition:
-##  @date 20/09/2026 by @author Tsukini
+##  @date 23/09/2026 by @author Tsukini
 
 File Name:
 ##  @file Ollama.cpp
@@ -93,7 +93,13 @@ _hot _nodiscard std::string forge::Ollama::prompt(const std::string& prompt) con
         {"prompt", prompt},
         {"system", this->_sysprompt},
         {"stream", false}, // await full awnser
-        {"keep_alive", "10m"}
+        {"keep_alive", "10m"},
+        {"options", {
+            {"temperature", 0.0},
+            //{"top_p", 1.0},
+            //{"top_k", 1},
+            {"seed", 22} // constant result
+        }}
         // no context filed (memory wiped each time)
     };
     auto res = this->_cli->Post("/api/generate", body.dump(), "application/json");
